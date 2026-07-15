@@ -1,0 +1,100 @@
+@charset "utf-8";
+@font-face {
+    font-family: 'Pretendard';
+    font-weight: 100;
+    font-style: normal;
+    src: url('/assets_admin/fonts/Pretendard-Thin.eot');
+    src: url('/assets_admin/fonts/Pretendard-Thin.eot?#iefix') format('embedded-opentype'),
+        url('/assets_admin/fonts/Pretendard-Thin.woff2') format('woff2'),
+        url('/assets_admin/fonts/Pretendard-Thin.woff') format('woff'),
+        url('/assets_admin/fonts/Pretendard-Thin.ttf') format("truetype");
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Pretendard';
+    font-weight: 200;
+    font-style: normal;
+    src: url('/assets_admin/fonts/Pretendard-ExtraLight.eot');
+    src: url('/assets_admin/fonts/Pretendard-ExtraLight.eot?#iefix') format('embedded-opentype'),
+        url('/assets_admin/fonts/Pretendard-ExtraLight.woff2') format('woff2'),
+        url('/assets_admin/fonts/Pretendard-ExtraLight.woff') format('woff'),
+        url('/assets_admin/fonts/Pretendard-ExtraLight.ttf') format("truetype");
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Pretendard';
+    font-weight: 300;
+    font-style: normal;
+    src: url('/assets_admin/fonts/Pretendard-Light.eot');
+    src: url('/assets_admin/fonts/Pretendard-Light.eot?#iefix') format('embedded-opentype'),
+        url('/assets_admin/fonts/Pretendard-Light.woff2') format('woff2'),
+        url('/assets_admin/fonts/Pretendard-Light.woff') format('woff'),
+        url('/assets_admin/fonts/Pretendard-Light.ttf') format("truetype");
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Pretendard';
+    font-weight: 400;
+    font-style: normal;
+    src: url('/assets_admin/fonts/Pretendard-Regular.eot');
+    src: url('/assets_admin/fonts/Pretendard-Regular.eot?#iefix') format('embedded-opentype'),
+        url('/assets_admin/fonts/Pretendard-Regular.woff2') format('woff2'),
+        url('/assets_admin/fonts/Pretendard-Regular.woff') format('woff'),
+        url('/assets_admin/fonts/Pretendard-Regular.ttf') format("truetype");
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Pretendard';
+    font-weight: 500;
+    font-style: normal;
+    src: url('/assets_admin/fonts/Pretendard-Medium.eot');
+    src: url('/assets_admin/fonts/Pretendard-Medium.eot?#iefix') format('embedded-opentype'),
+        url('/assets_admin/fonts/Pretendard-Medium.woff2') format('woff2'),
+        url('/assets_admin/fonts/Pretendard-Medium.woff') format('woff'),
+        url('/assets_admin/fonts/Pretendard-Medium.ttf') format("truetype");
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Pretendard';
+    font-weight: 600;
+    font-style: normal;
+    src: url('/assets_admin/fonts/Pretendard-SemiBold.eot');
+    src: url('/assets_admin/fonts/Pretendard-SemiBold.eot?#iefix') format('embedded-opentype'),
+        url('/assets_admin/fonts/Pretendard-SemiBold.woff2') format('woff2'),
+        url('/assets_admin/fonts/Pretendard-SemiBold.woff') format('woff'),
+        url('/assets_admin/fonts/Pretendard-SemiBold.ttf') format("truetype");
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Pretendard';
+    font-weight: 700;
+    font-style: normal;
+    src: url('/assets_admin/fonts/Pretendard-Bold.eot');
+    src: url('/assets_admin/fonts/Pretendard-Bold.eot?#iefix') format('embedded-opentype'),
+        url('/assets_admin/fonts/Pretendard-Bold.woff2') format('woff2'),
+        url('/assets_admin/fonts/Pretendard-Bold.woff') format('woff'),
+        url('/assets_admin/fonts/Pretendard-Bold.ttf') format("truetype");
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Pretendard';
+    font-weight: 800;
+    font-style: normal;
+    src: url('/assets_admin/fonts/Pretendard-ExtraBold.eot');
+    src: url('/assets_admin/fonts/Pretendard-ExtraBold.eot?#iefix') format('embedded-opentype'),
+        url('/assets_admin/fonts/Pretendard-ExtraBold.woff2') format('woff2'),
+        url('/assets_admin/fonts/Pretendard-ExtraBold.woff') format('woff'),
+        url('/assets_admin/fonts/Pretendard-ExtraBold.ttf') format("truetype");
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Pretendard';
+    font-weight: 900;
+    font-style: normal;
+    src: url('/assets_admin/fonts/Pretendard-Black.eot');
+    src: url('/assets_admin/fonts/Pretendard-Black.eot?#iefix') format('embedded-opentype'),
+        url('/assets_admin/fonts/Pretendard-Black.woff2') format('woff2'),
+        url('/assets_admin/fonts/Pretendard-Black.woff') format('woff'),
+        url('/assets_admin/fonts/Pretendard-Black.ttf') format("truetype");
+    font-display: swap;
+}
