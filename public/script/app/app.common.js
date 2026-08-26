@@ -1,20 +1,32 @@
 "use strict";
 
-let script_lang = 'ENG'; // KR or ENG
+let script_lang = 'KR'; // KR or ENG
 
 $(function () {
     if ($('form').length > 0) {
         $('form[method=post]').attr('onsubmit', 'return false;');
     }
 
-    if ($('input:text[datepicker]').length > 0) {
+    if ($('.datepicker').length > 0) {
         callDatePicker();
     }
 
-    if ($('input:text[datetimepicker]').length > 0) {
+    if ($('.datetimepicker').length > 0) {
         callDateTimePicker();
     }
-})
+
+    if ($('.target-datepicker').length > 0) {
+        callTargetDatePicker();
+    }
+
+    if ($('.target-datetimepicker').length > 0) {
+        callTargetDateTimePicker();
+    }
+
+    if ($('.target-replace-datepicker').length > 0) {
+        callTargetReplaceDatePicker();
+    }
+});
 
 // ajax Setup
 $.ajaxSetup({
@@ -27,8 +39,8 @@ $.ajaxSetup({
 $(document).on('click', '.call-popup', function (e) {
     e.preventDefault();
 
-    const popupHeight = isEmpty($(this).data('height')) ? 700 : $(this).data('height');
     const popupWidth = isEmpty($(this).data('width')) ? 500 : $(this).data('width');
+    const popupHeight = isEmpty($(this).data('height')) ? 700 : $(this).data('height');
     const popName = isEmpty($(this).data('name')) ? 'popup' : $(this).data('name');
     const popupY = (window.screen.height / 2) - (popupHeight / 2);
     const popupX = (window.screen.width / 2) - (popupWidth / 2);
@@ -43,93 +55,249 @@ $(document).on('click', '#popup_cancel_btn', function () {
     }
 });
 
-// validator Default
-const defaultVaildation = () => {
-    // 공백 제거후 빈값 체크
-    $.validator.addMethod('isEmpty', function (value, element) {
-        return !isEmpty(value);
-    });
-
-    // 최소 숫자 0 이상일 경우
-    $.validator.addMethod('minInt', function (value, element) {
-        return (parseInt(uncomma(value)) > 0);
-    });
-
-    // 전화번호 or 휴대폰 (하이픈포함) 정규식 체크
-    $.validator.addMethod('telRegExp', function (value, element) {
-        const telRegExp = /^[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}/;
-        return telRegExp.test(value);
-    });
-
-    // 개월수 1 ~ 12 만 허용
-    $.validator.addMethod('monthCheck', function (value, element) {
-        return ((parseInt(value) > 0) && (parseInt(value) <= 12));
-    });
-
-    // radio or checkbox 체크 유무
-    $.validator.addMethod('checkEmpty', function (value, element) {
-        return $('input[name="' + $(element).attr('name') + '"]:checked').length > 0;
-    });
-
-    // tinymce 에디터 빈값 체크
-    $.validator.addMethod('isTinyEmpty', function (value, element) {
-        let tinyVal = tinymce.get($(element).attr('id')).getContent(); // 내용 가져오기
-        tinyVal = tinyVal.replace(/<[^>]*>?/g, ""); // html 태그 삭제
-        tinyVal = tinyVal.replace(/\&nbsp;/g, ' '); // &nbsp 삭제
-
-        return !isEmpty(tinyVal);
-    });
-
-    $.validator.setDefaults({
-        onkeyup: false,
-        onclick: false,
-        onfocusout: false,
-        showErrors: function (errorMap, errorList) {
-            if (this.numberOfInvalids()) {
-                let obj = {};
-                obj.case = 'focus';
-                obj.focus = errorList[0].element;
-                obj.msg = errorList[0].message;
-
-                actionAlert(obj);
-            }
-        }
-    });
-}
-
 const callDatePicker = () => {
     let datepicker = {};
 
-    $('input:text[datepicker]').each(function (k, v) {
-        datepicker[$(v).attr('id')] = $(v).flatpickr({
-            locale: "ko", // 한국어 설정
-            enableTime : false,
-            enableSeconds:false,
+    $('.datepicker').each(function (k, v) {
+        const $el = $(v);
+
+        // data 값 읽기
+        let minDate = $el.data('mindate');
+        let maxDate = $el.data('maxdate');
+
+        // 옵션 구성
+        const options = {
+            locale: "ko",
+            enableTime: false,
+            enableSeconds: false,
             altFormat: 'Y-m-d',
-            dateFormat : "Y-m-d",
-        });
+            dateFormat: "Y-m-d"
+        };
+
+        // 🔥 min/max 적용
+        if (minDate) {
+            options.minDate = minDate === 'today'
+                ? 'today'
+                : moment(minDate).format('YYYY-MM-DD');
+        }
+
+        if (maxDate) {
+            options.maxDate = maxDate === 'today'
+                ? 'today'
+                : moment(maxDate).format('YYYY-MM-DD');
+        }
+
+        // id 없을 때 대비
+        const id = $el.attr('id') || `datepicker_${k}`;
+
+        datepicker[id] = $el.flatpickr(options);
     });
 
     return datepicker;
-}
+};
 
 const callDateTimePicker = () => {
     let datetimepicker = {};
 
-    $('input:text[datetimepicker]').each(function (k, v) {
-        datetimepicker[$(v).attr('id')] = $(v).flatpickr({
-            locale: "ko", // 한국어 설정
+    $('.datetimepicker').each(function (k, v) {
+        const $el = $(v);
+
+        // data 값 읽기
+        let minDate = $el.data('mindate');
+        let maxDate = $el.data('maxdate');
+
+        // 옵션 구성
+        const options = {
+            locale: "ko",
             time_24hr: true,
-            enableTime : true,
-            enableSeconds:true,
+            enableTime: true,
+            enableSeconds: true,
             altInput: true,
-            altFormat: 'Y-m-d H:i:S',
-            dateFormat : "Y-m-d H:i:S",
-        });
+            altFormat: 'Y-m-d H:i:S', // 🔥 수정
+            dateFormat: "Y-m-d H:i:S"
+        };
+
+        // 🔥 min/max 적용
+        if (minDate) {
+            options.minDate = minDate === 'today'
+                ? 'today'
+                : moment(minDate).format('YYYY-MM-DD HH:mm:ss');
+        }
+
+        if (maxDate) {
+            options.maxDate = maxDate === 'today'
+                ? 'today'
+                : moment(maxDate).format('YYYY-MM-DD HH:mm:ss');
+        }
+
+        // id 없을 때 대비
+        const id = $el.attr('id') || `datetimepicker_${k}`;
+
+        datetimepicker[id] = $el.flatpickr(options);
     });
 
     return datetimepicker;
-}
+};
+
+// input 아닌 다른 태그 클릭시 datepicker 활성화 후 대상에 데이터 삽입 대상은 data-target 에 id 값 설정
+const callTargetDatePicker = () => {
+    let datepicker = {};
+
+    $('.target-datepicker').each(function (k, v) {
+        const $el = $(v);
+
+        // data 값 읽기
+        let minDate = $el.data('mindate');
+        let maxDate = $el.data('maxdate');
+
+        // 기본 옵션
+        const options = {
+            locale: "ko",
+            enableTime: false,
+            enableSeconds: false,
+            altFormat: 'Y-m-d',
+            dateFormat: "Y-m-d",
+
+            onChange: function(selectedDates, dateStr, instance) {
+                if (!selectedDates.length) return;
+
+                const target = $(instance.element).data('target');
+                $(`#${target}`).val(dateStr);
+            }
+        };
+
+        // 🔥 min/max 적용
+        if (minDate) {
+            options.minDate = minDate === 'today'
+                ? 'today'
+                : moment(minDate).format('YYYY-MM-DD');
+        }
+
+        if (maxDate) {
+            options.maxDate = maxDate === 'today'
+                ? 'today'
+                : moment(maxDate).format('YYYY-MM-DD');
+        }
+
+        // id 없을 때 대비
+        const id = $el.attr('id') || `datepicker_${k}`;
+
+        datepicker[id] = $el.flatpickr(options);
+    });
+
+    return datepicker;
+};
+
+// input 아닌 다른 태그 클릭시 datetimepicker 활성화 후 대상에 데이터 삽입 대상은 data-target 에 id 값 설정
+const callTargetDateTimePicker = () => {
+    let datetimepicker = {};
+
+    $('.target-datetimepicker').each(function (k, v) {
+        const $el = $(v);
+
+        // data 값 읽기
+        let minDate = $el.data('mindate');
+        let maxDate = $el.data('maxdate');
+
+        // 기본 옵션
+        const options = {
+            locale: "ko",
+            time_24hr: true,
+            enableTime: true,
+            enableSeconds: true,
+            altInput: true,
+            altFormat: 'Y-m-d H:i:S',
+            dateFormat: "Y-m-d H:i:S",
+
+            onChange: function(selectedDates, dateStr, instance) {
+                if (!selectedDates.length) return;
+
+                const target = $(instance.element).data('target');
+                $(`#${target}`).val(dateStr);
+                validateEssChk();
+            }
+        };
+
+        // 🔥 min/max 적용
+        if (minDate) {
+            options.minDate = minDate === 'today'
+                ? 'today'
+                : moment(minDate).format('YYYY-MM-DD HH:mm:ss');
+        }
+
+        if (maxDate) {
+            options.maxDate = maxDate === 'today'
+                ? 'today'
+                : moment(maxDate).format('YYYY-MM-DD HH:mm:ss');
+        }
+
+        // id 없을 때 대비
+        const id = $el.attr('id') || `datetimepicker_${k}`;
+
+        datetimepicker[id] = $el.flatpickr(options);
+    });
+
+    return datetimepicker;
+};
+
+// input 아닌 다른 태그 클릭시 datepicker 활성화 후 대상에 데이터 Y/M/D 각각 삽입 대상은 data-target 에 id 값 설정 (id 규칙 확인 필요)
+const callTargetReplaceDatePicker = () => {
+    let datepicker = {};
+
+    $('.target-replace-datepicker').each(function (k, v) {
+        const $el = $(v);
+
+        // data 값 읽기
+        let minDate = $el.data('mindate');
+        let maxDate = $el.data('maxdate');
+
+        // 옵션 기본값
+        const options = {
+            locale: "ko",
+            enableTime: false,
+            enableSeconds: false,
+            altFormat: 'Y-m-d',
+            dateFormat: "Y-m-d",
+
+            onChange: function(selectedDates, dateStr, instance) {
+                if (!selectedDates.length) return;
+
+                const m = moment(selectedDates[0]);
+
+                const year  = m.format('YYYY');
+                const month = m.format('MM');
+                const day   = m.format('DD');
+
+                const _this = $(instance.element);
+                const target = _this.data('target');
+
+                $(`#${target}_y`).val(year);
+                $(`#${target}_m`).val(month);
+                $(`#${target}_d`).val(day);
+
+                if (_this.hasClass('date-calc')) {
+                    dateCalc();
+                }
+
+                validateEssChk();
+            }
+        };
+
+        // 🔥 min/max 동적 적용
+        if (minDate) {
+            options.minDate = minDate;
+        }
+
+        if (maxDate) {
+            options.maxDate = maxDate;
+        }
+
+        // 초기화
+        datepicker[$el.attr('id')] = $el.flatpickr(options);
+    });
+
+    return datepicker;
+};
 
 const encryptAction = (data) => {
     const encKey = "secret phrase";
@@ -244,15 +412,17 @@ const callMultiAjax = (url, obj, isDebug = false) => {
 
 // callback ajax
 const callbackAjax = (url, obj, callback, isDebug = false) => {
+    const spinnerText = (obj.spinner_text) ? obj.spinner_text : '';
+
     $.ajax({
         type: "POST",
         url: url,
         data: encryptData(obj),
         beforeSend: function () {
-            spinnerShow();
+            spinnerShow(obj.spinner_text || '');
         },
         complete: function () {
-            spinnerHide();
+            spinnerHide(spinnerText);
         },
         success: function (data) {
             if (isDebug) console.log(data);
@@ -267,6 +437,10 @@ const callbackAjax = (url, obj, callback, isDebug = false) => {
 
 // callback multi-part ajax (file 전송시 or 배열값 전송시)
 const callbackMultiAjax = (url, obj, callback, isDebug = false) => {
+    // obj(FormData) 안에 spinner_text 필드가 있는지 확인
+    const hasSpinnerText = obj instanceof FormData && obj.has('spinner_text');
+    const spinnerText = hasSpinnerText ? obj.get('spinner_text') : '';
+
     $.ajax({
         type: "POST",
         processData: false,
@@ -274,7 +448,7 @@ const callbackMultiAjax = (url, obj, callback, isDebug = false) => {
         url: url,
         data: encryptMultiData(obj),
         beforeSend: function () {
-            spinnerShow();
+            spinnerShow(spinnerText);
         },
         complete: function () {
             spinnerHide();
@@ -460,13 +634,18 @@ const ajaxErrorData = (obj) => {
 }
 
 // ajax loading spinner Show
-const spinnerShow = () => {
+const spinnerShow = (text = '') => {
+    if (!isEmpty(text )) {
+        $("#spinner-div .spinner-text").html(text);
+    }
+
     $("#spinner-div").show();
 }
 
 // ajax loading spinner Hide
 const spinnerHide = () => {
     $("#spinner-div").hide();
+    $("#spinner-div .spinner-text").html('');
 }
 
 // add html
@@ -681,7 +860,7 @@ const actionToast = (obj) => {
         position: 'mid-center',
         stack: false,
         hideAfter: 2000, // 3초 후 사라짐
-    });;
+    });
 
     if (obj.case) {
         delete obj.case;
@@ -710,18 +889,11 @@ const fileCheck = (_this, inputTarget = null) => {
     if (pattern.test(fileName)) {
         // 파일명에 허용된 특수문자 '-', '_', '(', ')', '[', ']', '.'
 
-        switch (script_lang) {
-            case 'KR':
-                alert('파일명에서 특수 문자를 제거해 주세요.');
-                break;
+        const msg1 = (script_lang === 'KR')
+            ? '파일 이름에서 특수 문자를 제거해 주세요.'
+            : 'Please remove special characters from the file name.';
 
-            case 'ENG':
-                alert('Please remove special characters from the file name.');
-                break;
-
-            default:
-                break;
-        }
+        alert(msg1);
 
         if (!isEmpty(inputTarget)) {
             $(inputTarget).val('');
@@ -737,7 +909,12 @@ const fileCheck = (_this, inputTarget = null) => {
         const ext = str.split('.').pop().toLowerCase();
 
         if ($.inArray(ext, extArr) == -1) {
-            alert(`${accept.replace(/\|/g, ', ')}` + ' only');
+
+            const msg2 = (script_lang === 'KR')
+                ? `${accept.replace(/\|/g, ', ')} 만 업로드 가능합니다.`
+                : `${accept.replace(/\|/g, ', ')} only`;
+
+            alert(msg2);
 
             if (!isEmpty(inputTarget)) {
                 $(inputTarget).val('');
@@ -753,18 +930,12 @@ const fileCheck = (_this, inputTarget = null) => {
     const maxFileSize = isEmpty(customSize) ? 20 : parseInt(customSize);
     if (size > (maxFileSize * 1024 * 1024)) {
 
-        switch (script_lang) {
-            case 'KR':
-                alert(`첨부 파일 크기는 ${maxFileSize}MB 내에서 등록할 수 있습니다.`);
-                break;
+        const msg3 = (script_lang === 'KR')
+            ? `첨부 파일 크기는 ${maxFileSize}MB 이내로 등록할 수 있습니다.`
+            : `The attached file size can be registered within ${maxFileSize}MB.`;
 
-            case 'ENG':
-                alert(`The attached file size can be registered within ${maxFileSize}MB.`);
-                break;
 
-            default:
-                break;
-        }
+        alert(msg3);
 
         if (!isEmpty(inputTarget)) {
             $(inputTarget).val('');
@@ -783,18 +954,11 @@ const fileCheck = (_this, inputTarget = null) => {
 const fileDelCheck = (delTarget) => {
     if (delTarget.length > 0) {
 
-        switch (script_lang) {
-            case 'KR':
-                alert('첨부파일 삭제후 업로드 해주세요.');
-                break;
+        const msg = (script_lang === 'KR')
+            ? '첨부파일 삭제후 업로드 해주세요.'
+            : 'Please delete the attached file and upload it.';
 
-            case 'ENG':
-                alert('Please upload the attached file after deleting it.');
-                break;
-
-            default:
-                break;
-        }
+        alert(msg);
 
         return false;
     }
@@ -817,18 +981,11 @@ const emailCheck = (email) => {
 
     if (!emailRegExp.test($.trim(email))) {
 
-        switch (script_lang) {
-            case 'KR':
-                alert('올바른 이메일 형식이 아닙니다.');
-                break;
+        const msg = (script_lang === 'KR')
+            ? "올바른 이메일 형식이 아닙니다."
+            : "Email address seems incorrect. (check @ and .’s)";
 
-            case 'ENG':
-                alert('Email address seems incorrect. (check @ and .’s)');
-                break;
-
-            default:
-                break;
-        }
+        alert(msg);
 
         return false;
     }
@@ -836,33 +993,22 @@ const emailCheck = (email) => {
     return true;
 }
 
-const checkPassword = (password) => {
-    if (!pwdREGEX(password)) {
+const passwordCheck = (password) => {
+    // 비밀번호 REGX (4~14자, 소문자 1개 이상 포함, 또는 특수문자 1개 이상 포함, 소문자 + 숫자 + 특수문자, 대문자 사용물가)
+    const pwdRegex = /^(?=.*[a-z])(?=.*[\d\W])[a-z\d\W]{4,14}$/;
 
-        switch (script_lang) {
-            case 'KR':
-                alert('올바른 비밀번호 형식이 아닙니다.');
-                break;
+    if (!pwdRegex.test(password)) {
 
-            case 'ENG':
-                alert('Invalid password format.');
-                break;
+        const msg = (script_lang === 'KR')
+            ? "올바른 비밀번호 형식이 아닙니다."
+            : "Invalid password format.";
 
-            default:
-                break;
-        }
+        alert(msg);
 
         return false;
     }
 
     return true;
-}
-
-const rowspanizer = (target, cols = [0]) => {
-    $(target).rowspanizer({
-        cols :cols,
-        vertical_align: "middle"
-    });
 }
 
 // form Data serialize convert Json
@@ -935,18 +1081,11 @@ const uncomma = (str) => {
 const isMaxLength = (str, size) => {
     if (str.length > size) {
 
-        switch (script_lang) {
-            case 'KR':
-                alert("최대 " + size + "자까지 입력 가능합니다.");
-                break;
+        const msg = (script_lang === 'KR')
+            ? `최대 ${size}자 까지 입력 가능합니다.`
+            : `You can enter up to ${size} characters.`;
 
-            case 'ENG':
-                alert("Maximum" + size + " can be entered up to a letter.");
-                break;
-
-            default:
-                break;
-        }
+        alert(msg);
 
         str = str.substring(0, size);
     }
@@ -977,18 +1116,11 @@ const isMaxByte = (str, size) => {
 
     if (rbyte > size) {
 
-        switch (script_lang) {
-            case 'KR':
-                alert("최대 " + size + "byte까지 입력 가능합니다.");
-                break;
+        const msg = (script_lang === 'KR')
+            ? `최대 ${size}bytes 까지 입력 가능합니다.`
+            : `You can enter up to ${size} bytes.`;
 
-            case 'ENG':
-                alert("Maximum" + size + "byte is allowed.");
-                break;
-
-            default:
-                break;
-        }
+        alert(msg);
 
         str = str.substr(0, rlen);
     }
@@ -1012,43 +1144,23 @@ const refreshCaptcha = () => {
     });
 }
 
-
 // captcha check
 const captchaCheck = () => {
     const captcha = $('#captcha');
 
     if (captcha.length > 0 && isEmpty(captcha.val())) {
 
-        switch (script_lang) {
-            case 'KR':
-                alert("인증 문자가 일치하지 않습니다.");
-                break;
+        const msg = (script_lang === 'KR')
+            ? "인증 문자가 일치하지 않습니다."
+            : "Your response to the CAPTCHA appears to be invalid. Please re-verify that you\'re not a robot.";
 
-            case 'ENG':
-                alert("Your response to the CAPTCHA appears to be invalid. Please re-verify that you're not a robot.");
-                break;
-
-            default:
-                break;
-        }
-
+        alert(msg);
         captcha.focus();
+
         return false;
     }
 
     return true;
-}
-
-// 아이디 REGX (길이: 4~14자, 영문자 1개 이상 포함, 숫자 또는 특수문자 1개 이상 포함, 영문 + 숫자 + 특수문자)
-const uidREGEX = (uid) => {
-    const uidRegex = /^(?=.*[a-zA-Z])(?=.*[\d\W])[a-zA-Z\d\W]{4,14}$/;
-    return uidRegex.test(uid);
-}
-
-// 비밀번호 REGX (4~14자, 소문자 1개 이상 포함, 또는 특수문자 1개 이상 포함, 소문자 + 숫자 + 특수문자, 대문자 사용물가)
-const pwdREGEX = (pwd) => {
-    const pwdRegex = /^(?=.*[a-z])(?=.*[\d\W])[a-z\d\W]{4,14}$/;
-    return pwdRegex.test(pwd);
 }
 
 // phone only number Auto Hyphen
@@ -1060,16 +1172,45 @@ $(document).on("keyup", "input[phoneHyphen]", function () {
 // numberFormat add comma
 $(document).on("keyup", "input[priceFormat]", function () {
     const num = uncomma($(this).val()).replace(/[^0-9\s+]/g, "")
+
+    // 0으로 시작후 뒤에 숫자 들어오면 앞의 0 제거
+    num = num.replace(/^0+(\d)/, "$1");
+
     $(this).val(comma(isNaN(num) ? '' : num));
 });
 
 // onlyNumber
 $(document).on("keyup", "input[onlyNumber]", function () {
-    const num = $(this).val().replace(/[^0-9\s+]/g, "");
-    $(this).val(isNaN(num) ? '' : num);
+    let num = $(this).val().replace(/[^0-9]/g, "");
+
+    // 0으로 시작후 뒤에 숫자 들어오면 앞의 0 제거
+    num = num.replace(/^0+(\d)/, "$1");
+
+    $(this).val(num);
 });
 
-// number and hyphen
+// onlyDecimal
+$(document).on("keyup", "input[onlyDecimal]", function () {
+    let val = $(this).val();
+
+    // 1. 숫자 + . 만 허용
+    val = val.replace(/[^0-9.]/g, "");
+
+    // 2. 소수점 1개만 허용
+    val = val.replace(/(\..*?)\./g, "$1");
+
+    // 3. .으로 시작하면 0. 붙이기 (.1 → 0.1)
+    if (val.startsWith('.')) {
+        val = '0' + val;
+    }
+
+    // 4. 0 뒤에 숫자 오면 0 제거 (단, 0.xxx는 유지)
+    val = val.replace(/^0+(\d)/, "$1");
+
+    $(this).val(val);
+});
+
+// 숫자와 - 만 허용
 $(document).on("keyup", "input[numberHyphen]", function () {
     const num = $(this).val().replace(/[^0-9-]/g, "");
     $(this).val(num);
@@ -1100,19 +1241,11 @@ $(document).on("keyup", "input[onlyKoAlert]", function () {
 
     if (!isOnlyKorean && val.length > 0) {
 
-        switch (script_lang) {
-            case 'KR':
-                alert("한글만 입력 가능합니다.");
-                break;
+        const msg = (script_lang === 'KR')
+            ? "한글만 입력 가능합니다."
+            : "Please enter Korean letters and spaces only.";
 
-            case 'ENG':
-                alert("Only enter Korean.");
-                break;
-
-            default:
-                break;
-        }
-
+        alert(msg);
         $(this).val('');
     }
 });
@@ -1130,19 +1263,11 @@ $(document).on("keyup", "input[onlyEnAlert]", function () {
 
     if (!isOnlyEnglishOrSpace && val.length > 0) {
 
-        switch (script_lang) {
-            case 'KR':
-                alert("영문만 입력 가능합니다.");
-                break;
+        const msg = (script_lang === 'KR')
+            ? "영문만 입력 가능합니다."
+            : "Please enter English letters and spaces only.";
 
-            case 'ENG':
-                alert("Only enter English.");
-                break;
-
-            default:
-                break;
-        }
-
+        alert(msg);
         $(this).val('');
     }
 });
@@ -1154,13 +1279,48 @@ $(document).on("keyup", "input[onlyEnNum]", function () {
 });
 
 // EnglishName (공백, -, _ 허용)
-$(document).on("keyup", "input[enName]", function () {
+$(document).on("keyup", "input[enname]", function () {
     const en = $(this).val().replace(/[^a-z\s_\-]/gi, "");
     $(this).val(en);
 });
 
-// English 첫글자 대문자
+// 영문 첫글자 대문자
 $(document).on("keyup", "input[upperCase]", function () {
     const str = $(this).val();
     $(this).val(str.charAt(0).toUpperCase() + str.slice(1));
+});
+
+// 영문만 입력 첫글자 대문자
+$(document).on("keyup", "input[enUpperCase]", function () {
+    const str = $(this).val().replace(/[^a-zA-Z\s]/g, '');
+
+    $(this).val(
+        str.replace(/(^|\s)([a-z])/g, function (match, space, char) {
+            return space + char.toUpperCase();
+        })
+    );
+});
+
+// 영문만 입력 첫글자 대문자 and 공백 이후 첫글자 대문자
+$(document).on("keyup", "input[spaceUpperCase]", function () {
+    const str = $(this).val();
+
+    $(this).val(
+        str.toLowerCase().replace(/(^|\s)([a-z])/g, function (match, space, char) {
+            return space + char.toUpperCase();
+        })
+    );
+});
+
+// 영문만 입력 전부 대문자로
+$(document).on("keyup", "input[enAllUpperCase]", function () {
+    const en = $(this).val().replace(/[^a-z\s+]/gi, "");
+    $(this).val(en.toUpperCase());
+});
+
+// 라디오 or 체크박스 클릭 막기
+$(document).on('click', '.NONE-CLICK', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
 });

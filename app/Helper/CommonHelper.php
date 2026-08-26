@@ -368,7 +368,15 @@ if (!function_exists('convertUTF8')) {
     }
 }
 
-// 금액 표기
+// 날짜 변환
+if (!function_exists('carbonParse')) {
+    function carbonParse($date, $format = 'F j, Y')
+    {
+        return \Carbon\Carbon::parse($date)->format($format);
+    }
+}
+
+// 금액 한글 표기
 if (!function_exists('priceKo')) {
     function priceKo($price = 0)
     {
@@ -463,14 +471,6 @@ if (!function_exists('DDay')) {
     }
 }
 
-// carbonParse
-if (!function_exists('carbonParse')) {
-    function carbonParse($date, $format = 'F j, Y')
-    {
-        return \Carbon\Carbon::parse($date)->format($format);
-    }
-}
-
 if (!function_exists('masterIp')) {
     function masterIp(): bool
     {
@@ -501,21 +501,5 @@ if (!function_exists('isDev')) {
     function isDev(): bool
     {
         return in_array(request()->ip(), config('site.app.devIp'));
-    }
-}
-
-if (!function_exists('customDump')) {
-    /**
-     * @return never
-     */
-    function customDump(...$vars)
-    {
-        if (!in_array(\PHP_SAPI, ['cli', 'phpdbg'], true) && !headers_sent()) {
-            header('HTTP/1.1 500 Internal Server Error');
-        }
-
-        foreach ($vars as $v) {
-            \Symfony\Component\VarDumper\VarDumper::dump($v);
-        }
     }
 }
