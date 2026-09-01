@@ -814,7 +814,7 @@ const isFocus = (target) => {
     $(target).focus();
 }
 
-// location url
+// location
 const locationUrl = (obj) => {
     switch (obj.case) {
         case 'replace':
@@ -951,6 +951,7 @@ const fileCheck = (_this, inputTarget = null) => {
     return true;
 }
 
+// file 삭제 체크
 const fileDelCheck = (delTarget) => {
     if (delTarget.length > 0) {
 
@@ -976,6 +977,7 @@ const isEmpty = (str) => {
     return (typeof str === "undefined" || str === null || str === "") ? true : false;
 }
 
+// 이메일 형식 체크
 const emailCheck = (email) => {
     const emailRegExp = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -993,8 +995,9 @@ const emailCheck = (email) => {
     return true;
 }
 
+// 비밀번호 체크
 const passwordCheck = (password) => {
-    // 비밀번호 REGX (4~14자, 소문자 1개 이상 포함, 또는 특수문자 1개 이상 포함, 소문자 + 숫자 + 특수문자, 대문자 사용물가)
+    // REGX (4~14자, 소문자 1개 이상 포함, 또는 특수문자 1개 이상 포함, 소문자 + 숫자 + 특수문자, 대문자 사용물가)
     const pwdRegex = /^(?=.*[a-z])(?=.*[\d\W])[a-z\d\W]{4,14}$/;
 
     if (!pwdRegex.test(password)) {
@@ -1011,20 +1014,16 @@ const passwordCheck = (password) => {
     return true;
 }
 
-// form Data serialize convert Json
-const serializeConvertJson = (obj) => {
-    let jsonData = {};
+// form Data (일반 폼 전송용 ajax 호출 함수와 같이 사용)
+const formSerialize = (target) => {
+    let obj = $(target).serializeArray();
+    let formData = {};
 
     $(obj).each(function (k, v) {
-        jsonData[v.name] = v.value;
+        formData[v.name] = v.value;
     });
 
-    return jsonData;
-}
-
-// form Data serialize
-const formSerialize = (target) => {
-    let formData = serializeConvertJson($(target).serializeArray());
+    // data 선언값 추가
     const targetData = $(target).data();
 
     Object.entries(targetData).forEach(([key, value]) => {
@@ -1034,7 +1033,7 @@ const formSerialize = (target) => {
     return formData;
 }
 
-// form Data
+// form Data (Multipart 폼 전송용 ajax 호출 함수와 같이 사용)
 const newFormData = (target) => {
     let formData = new FormData($(target)[0]);
     const targetData = $(target).data();
@@ -1046,57 +1045,53 @@ const newFormData = (target) => {
     return formData;
 }
 
-// 다음 우편번호 검색
-const callPostCode = (callback) => {
-    new daum.Postcode({
-        oncomplete: function (data) {
-            callback(data);
-        }
-    }).open();
-}
-
-// mobile check
+// 모바일 UA (User-Agent) 체크: 일부 최신 iPadOS가 Mac 으로 인식될때 있어서 보조로 추가
 const isMobile = () => {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
+    const ua = navigator.userAgent || '';
 
-// 날짜별 요일
+    return /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua)
+        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+};
+
+// 날짜별 요일 (date => Y-m-d 형태)
 const getYoil = (date) => {
     const week = ['일', '월', '화', '수', '목', '금', '토'];
     return week[new Date(date).getDay()];
 }
 
-// add comma
+// 숫자 3자리마다 , 추가
 const comma = (str) => {
     str = String(str);
     return str.replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
 }
 
-// remove comma
+// , 제거
 const uncomma = (str) => {
     str = String(str);
     return str.replace(/[^\d]+/g, '');
 }
 
-const isMaxLength = (str, size) => {
-    if (str.length > size) {
+// 최대 입력 허용 글자수 (return 문자열)
+const isMaxLength = (str, max) => {
+    if (str.length > max) {
 
         const msg = (script_lang === 'KR')
-            ? `최대 ${size}자 까지 입력 가능합니다.`
-            : `You can enter up to ${size} characters.`;
+            ? `최대 ${max}자 까지 입력 가능합니다.`
+            : `You can enter up to ${max} characters.`;
 
         alert(msg);
 
-        str = str.substring(0, size);
+        str = str.substring(0, max);
     }
 
     return str;
 }
 
-const isMaxByte = (str, size) => {
+// 최대 입력 허용 Byte (return 문자열)
+const isMaxByte = (str, max) => {
     const str_len = str.length;
-    let rbyte = 0;
-    let rlen = 0;
+    let byte = 0;
+    let len = 0;
     let one_char = "";
     let i = 0;
 
@@ -1104,31 +1099,31 @@ const isMaxByte = (str, size) => {
         one_char = str.charAt(i);
 
         if (escape(one_char).length > 4) {
-            rbyte += 2; // 한글 2Byte
+            byte += 2; // 한글 2Byte
         } else {
-            rbyte++; // 영문 등 1Byte
+            byte++; // 영문 등 1Byte
         }
 
-        if (rbyte <= size) {
-            rlen = i + 1; // return 할 문자열 갯수
+        if (byte <= max) {
+            len = i + 1; // return 할 문자열 갯수
         }
     }
 
-    if (rbyte > size) {
+    if (byte > max) {
 
         const msg = (script_lang === 'KR')
-            ? `최대 ${size}bytes 까지 입력 가능합니다.`
-            : `You can enter up to ${size} bytes.`;
+            ? `최대 ${max}bytes 까지 입력 가능합니다.`
+            : `You can enter up to ${max}bytes.`;
 
         alert(msg);
 
-        str = str.substr(0, rlen);
+        str = str.substr(0, len);
     }
 
     return str;
 }
 
-// Refresh captcha
+// refresh captcha
 const refreshCaptcha = () => {
     $.ajax({
         type: "POST",
@@ -1163,23 +1158,16 @@ const captchaCheck = () => {
     return true;
 }
 
-// phone only number Auto Hyphen
-$(document).on("keyup", "input[phoneHyphen]", function () {
-    const phone = $(this).val().replace(/[^0-9]/g, "").replace(/(^02|^0505|^1[0-9]{3}|^0[0-9]{2})([0-9]+)?([0-9]{4})$/, "$1-$2-$3").replace("--", "-");
-    $(this).val(phone);
-});
+// 다음 우편번호 검색 (cdn 선언후 사용가능)
+const callPostCode = (callback) => {
+    new daum.Postcode({
+        oncomplete: function (data) {
+            callback(data);
+        }
+    }).open();
+}
 
-// numberFormat add comma
-$(document).on("keyup", "input[priceFormat]", function () {
-    const num = uncomma($(this).val()).replace(/[^0-9\s+]/g, "")
-
-    // 0으로 시작후 뒤에 숫자 들어오면 앞의 0 제거
-    num = num.replace(/^0+(\d)/, "$1");
-
-    $(this).val(comma(isNaN(num) ? '' : num));
-});
-
-// onlyNumber
+// 숫자만 입력
 $(document).on("keyup", "input[onlyNumber]", function () {
     let num = $(this).val().replace(/[^0-9]/g, "");
 
@@ -1189,7 +1177,13 @@ $(document).on("keyup", "input[onlyNumber]", function () {
     $(this).val(num);
 });
 
-// onlyDecimal
+// 숫자와 - 만 허용
+$(document).on("keyup", "input[numberHyphen]", function () {
+    const num = $(this).val().replace(/[^0-9-]/g, "");
+    $(this).val(num);
+});
+
+// 숫자와 . 허용 (소수점)
 $(document).on("keyup", "input[onlyDecimal]", function () {
     let val = $(this).val();
 
@@ -1210,10 +1204,20 @@ $(document).on("keyup", "input[onlyDecimal]", function () {
     $(this).val(val);
 });
 
-// 숫자와 - 만 허용
-$(document).on("keyup", "input[numberHyphen]", function () {
-    const num = $(this).val().replace(/[^0-9-]/g, "");
-    $(this).val(num);
+// 숫자 , 포함한 금액 형태로 변환
+$(document).on("keyup", "input[priceFormat]", function () {
+    let num = uncomma($(this).val()).replace(/[^0-9\s+]/g, "")
+
+    // 0으로 시작후 뒤에 숫자 들어오면 앞의 0 제거
+    num = num.replace(/^0+(\d)/, "$1");
+
+    $(this).val(comma(isNaN(num) ? '' : num));
+});
+
+// 숫자만 입력 되면서 전화번호 형태로 - 포함 자동 변환
+$(document).on("keyup", "input[phoneHyphen]", function () {
+    const phone = $(this).val().replace(/[^0-9]/g, "").replace(/(^02|^0505|^1[0-9]{3}|^0[0-9]{2})([0-9]+)?([0-9]{4})$/, "$1-$2-$3").replace("--", "-");
+    $(this).val(phone);
 });
 
 // 공백입력 방지
@@ -1222,19 +1226,25 @@ $(document).on("keyup", "input[noneSpace]", function () {
     $(this).val(val);
 });
 
-// only Korean (공백허용) 한글만 입력
-$(document).on("keyup", "input[onlyKo]", function () {
-    const ko = $(this).val().replace(/[^가-힣\s+]/gi, "");
-    $(this).val(ko);
+// 영어 입력 막기 (공백허용)
+$(document).on("keyup", "input[noneEn]", function () {
+    const nonEn = $(this).val().replace(/[a-zA-Z]/g, "");
+    $(this).val(nonEn);
 });
 
-// None Korean (공백허용) 한글 입력 막기
+// 한글 입력 막기 (공백허용)
 $(document).on("keyup", "input[noneKo]", function () {
     const nonKo = $(this).val().replace(/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/g, "");
     $(this).val(nonKo);
 });
 
-// only Korean Alert (공백허용)
+// 한글만 입력 (공백허용) 한글만 입력
+$(document).on("keyup", "input[onlyKo]", function () {
+    const ko = $(this).val().replace(/[^가-힣\s+]/gi, "");
+    $(this).val(ko);
+});
+
+// 한글만 입력 Alert (공백허용)
 $(document).on("keyup", "input[onlyKoAlert]", function () {
     const val = $(this).val();
     const isOnlyKorean = /^[ㄱ-ㅎㅏ-ㅣ가-힣\s]+$/.test(val); // 한글 + 공백 허용
@@ -1250,13 +1260,13 @@ $(document).on("keyup", "input[onlyKoAlert]", function () {
     }
 });
 
-// only English (공백허용)
+// 영어만 입력 (공백허용)
 $(document).on("keyup", "input[onlyEn]", function () {
     const en = $(this).val().replace(/[^a-z\s+]/gi, "");
     $(this).val(en);
 });
 
-// only English Alert (공백허용)
+// 영어만 입력 Alert (공백허용)
 $(document).on("keyup", "input[onlyEnAlert]", function () {
     const val = $(this).val();
     const isOnlyEnglishOrSpace = /^[a-zA-Z\s]*$/.test(val);
@@ -1272,16 +1282,28 @@ $(document).on("keyup", "input[onlyEnAlert]", function () {
     }
 });
 
-// English & number (공백허용)
+// 영어 & 숫자 (공백허용)
 $(document).on("keyup", "input[onlyEnNum]", function () {
     const en = $(this).val().replace(/[^a-z0-9\s+]/gi, "");
     $(this).val(en);
 });
 
-// EnglishName (공백, -, _ 허용)
+// 영문입력 (공백, -, _ 허용)
 $(document).on("keyup", "input[enname]", function () {
     const en = $(this).val().replace(/[^a-z\s_\-]/gi, "");
     $(this).val(en);
+});
+
+// 영문입력 (공백, -, _ 허용) alert
+$(document).on("keyup", "input[ennameAlert]", function () {
+    const val = $(this).val();
+    const is_enname = /^[a-zA-Z\s_-]*$/.test(val);
+
+    if (!is_enname && val.length > 0) {
+
+        alert("영문, 공백, -, _만 입력 가능합니다.");
+        $(this).val('');
+    }
 });
 
 // 영문 첫글자 대문자
