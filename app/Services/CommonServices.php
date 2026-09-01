@@ -73,10 +73,10 @@ class CommonServices extends AppServices
                 break;
 
             case 'reply-file':
-                $boardReplyFile = BoardReplyFile::findOrFail($sid);
-                $boardReplyFile->increment('download');
+                $replyFile = BoardReplyFile::findOrFail($sid);
+                $replyFile->increment('download');
 
-                $this->data = ['realfile' => $boardReplyFile?->realfile, 'filename' => $boardReplyFile?->filename];
+                $this->data = ['realfile' => $replyFile?->realfile, 'filename' => $replyFile?->filename];
                 break;
 
             case 'mail':
@@ -110,12 +110,12 @@ class CommonServices extends AppServices
                 break;
 
             case 'reply': // 게시판 답글 plupload 파일 일괄 다운로드
-                $boardReply = BoardReply::findOrFail($sid);
-                $boardReply->files()->increment('download');
+                $reply = BoardReply::findOrFail($sid);
+                $reply->files()->increment('download');
 
                 $password = $request->password ?? null;
 
-                $this->data = $this->makeZip("{$boardReply->subject}.zip", $boardReply->files, $password);
+                $this->data = $this->makeZip("{$reply->subject}.zip", $reply->files, $password);
                 break;
 
             default:
