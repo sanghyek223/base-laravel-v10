@@ -15,6 +15,8 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    width: 80px;   /* dot 3개 배치 폭에 맞춤 (0, 30, 60 + dot너비 20) */
+    height: 40px;
 }
 
 .spinner-dot {
@@ -23,6 +25,7 @@
     background-color: #e27f5c;
     border-radius: 50%;
     position: absolute;
+    top: 0;
     animation: bounce 1s infinite alternate;
 }
 
@@ -36,6 +39,18 @@
 
 .spinner-dot:nth-child(3) {
     animation-delay: 0.2s;
+}
+
+.spinner-text {
+    position: absolute;
+    top: 45px;              /* dot 애니메이션 영역 아래로 */
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: 200px;
+    font-size: 14px;
+    color: #333;
+    white-space: nowrap;
 }
 
 @keyframes bounce {

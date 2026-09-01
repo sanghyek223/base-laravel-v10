@@ -214,7 +214,6 @@ const callTargetDateTimePicker = () => {
 
                 const target = $(instance.element).data('target');
                 $(`#${target}`).val(dateStr);
-                validateEssChk();
             }
         };
 
@@ -271,15 +270,9 @@ const callTargetReplaceDatePicker = () => {
                 const _this = $(instance.element);
                 const target = _this.data('target');
 
-                $(`#${target}_y`).val(year);
-                $(`#${target}_m`).val(month);
-                $(`#${target}_d`).val(day);
-
-                if (_this.hasClass('date-calc')) {
-                    dateCalc();
-                }
-
-                validateEssChk();
+                $(`#${target}`).find('dateY').val(year);
+                $(`#${target}`).find('dateM').val(month);
+                $(`#${target}`).find('dateD').val(day);
             }
         };
 
@@ -299,47 +292,18 @@ const callTargetReplaceDatePicker = () => {
     return datepicker;
 };
 
-const encryptAction = (data) => {
-    const encKey = "secret phrase";
+// obj 형태 암호화 실행 후 return
+const encryptData = (obj) => {
+    let newObj = {};
 
-    switch (true) {
-        case typeof data === 'boolean':
-            // boolean 일경우 string 으로 변환후 암호화
-            return encryptAction(data.toString());
+    $.each(obj, function (key, value) {
+        newObj[encryptAction(key)] = encryptAction(value);
+    });
 
-        case Array.isArray(data):
-            // 배열인 경우 각 요소를 암호화
-            return data.map(val => encryptAction(val));
-
-        case typeof data == 'object':
-            // 파일 데이터인 경우 암호화하지 않음
-            if (data instanceof Blob || data instanceof File) {
-                return data;
-            } else {
-                // 객체의 각 속성 값을 암호화
-                const encryptedObj = {};
-
-                for (const key in data) {
-                    if (data.hasOwnProperty(key)) {
-                        encryptedObj[key] = encryptAction(data[key]);
-                    }
-                }
-
-                return encryptedObj;
-            }
-
-        case typeof data == 'number':
-        case typeof data == 'string':
-            // 문자열 또는 숫자인 경우 암호화
-            const iv = CryptoJS.lib.WordArray.random(16);
-            return CryptoJS.AES.encrypt(data.toString(), encKey, {iv: iv}).toString();
-
-        default:
-            // 다른 타입의 데이터는 암호화하지 않음
-            return data;
-    }
+    return newObj;
 }
 
+// FormData 형태 암호화 실행 후 return
 const encryptMultiData = (obj) => {
     const multiFormData = new FormData();
     const processedKeys = new Set();
@@ -386,14 +350,46 @@ const encryptMultiData = (obj) => {
     return multiFormData;
 };
 
-const encryptData = (obj) => {
-    let newObj = {};
+// 암호화
+const encryptAction = (data) => {
+    const encKey = "secret phrase";
 
-    $.each(obj, function (key, value) {
-        newObj[encryptAction(key)] = encryptAction(value);
-    });
+    switch (true) {
+        case typeof data === 'boolean':
+            // boolean 일경우 string 으로 변환후 암호화
+            return encryptAction(data.toString());
 
-    return newObj;
+        case Array.isArray(data):
+            // 배열인 경우 각 요소를 암호화
+            return data.map(val => encryptAction(val));
+
+        case typeof data == 'object':
+            // 파일 데이터인 경우 암호화하지 않음
+            if (data instanceof Blob || data instanceof File) {
+                return data;
+            } else {
+                // 객체의 각 속성 값을 암호화
+                const encryptedObj = {};
+
+                for (const key in data) {
+                    if (data.hasOwnProperty(key)) {
+                        encryptedObj[key] = encryptAction(data[key]);
+                    }
+                }
+
+                return encryptedObj;
+            }
+
+        case typeof data == 'number':
+        case typeof data == 'string':
+            // 문자열 또는 숫자인 경우 암호화
+            const iv = CryptoJS.lib.WordArray.random(16);
+            return CryptoJS.AES.encrypt(data.toString(), encKey, {iv: iv}).toString();
+
+        default:
+            // 다른 타입의 데이터는 암호화하지 않음
+            return data;
+    }
 }
 
 // ajax
@@ -406,6 +402,20 @@ const callAjax = (url, obj, isDebug = false) => {
 // multi-part ajax (file 전송시 or 배열값 전송시)
 const callMultiAjax = (url, obj, isDebug = false) => {
     callbackMultiAjax(url, obj, function (data, error) {
+        (data) ? ajaxSuccessData(data) : ajaxErrorData(error);
+    }, isDebug);
+}
+
+// ajax none spinner
+const callNoneSpinnerAjax = (url, obj, isDebug = false) => {
+    callbackNoneSpinnerAjax(url, obj, function (data, error) {
+        (data) ? ajaxSuccessData(data) : ajaxErrorData(error);
+    }, isDebug);
+}
+
+// multi-part ajax ajax none spinner
+const callMultiNoneSpinnerAjax = (url, obj, isDebug = false) => {
+    callbackMultiNoneSpinnerAjax(url, obj, function (data, error) {
         (data) ? ajaxSuccessData(data) : ajaxErrorData(error);
     }, isDebug);
 }
@@ -465,18 +475,36 @@ const callbackMultiAjax = (url, obj, callback, isDebug = false) => {
 }
 
 // ajax none spinner
-const callNoneSpinnerAjax = (url, obj, isDebug = false) => {
+const callbackNoneSpinnerAjax = (url, obj, isDebug = false) => {
     $.ajax({
         type: "POST",
         url: url,
         data: encryptData(obj),
         success: function (data) {
             if (isDebug) console.log(data);
-            ajaxSuccessData(data);
+            callback(data, null);
         },
-        error: function (data) {
+        error: function (error) {
+            if (isDebug) console.log(error);
+            callback(null, error);
+        }
+    });
+}
+
+const callbackMultiNoneSpinnerAjax = (url, obj, callback, isDebug = false) => {
+    $.ajax({
+        type: "POST",
+        processData: false,
+        contentType: false,
+        url: url,
+        data: encryptMultiData(obj),
+        success: function (data) {
             if (isDebug) console.log(data);
-            ajaxErrorData(data);
+            callback(data, null);
+        },
+        error: function (error) {
+            if (isDebug) console.log(error);
+            callback(null, error);
         }
     });
 }
@@ -618,13 +646,12 @@ const ajaxErrorData = (obj) => {
         console.log(obj);
     } else {
         json.case = true;
-        json.msg = isEmpty(obj.responseJSON.msg) ? (obj.status + ' ERROR') : obj.responseJSON.msg;
+        json.msg = isEmpty(obj.responseJSON.msg)
+            ? (obj.status + ' ERROR')
+            : obj.responseJSON.msg;
 
-        if (!isEmpty(obj.responseJSON.redirect)) {
-            json.location = {
-                'case': obj.responseJSON.redirect,
-                'url': obj.responseJSON.url,
-            }
+        if (!isEmpty(obj.responseJSON.location)) {
+            json.location = obj.responseJSON.location
         }
 
         actionAlert(json);
