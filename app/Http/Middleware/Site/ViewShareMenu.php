@@ -17,7 +17,7 @@ class ViewShareMenu
     public function handle(Request $request, Closure $next)
     {
         view()->share([
-            'menu' => config('site.menu-' . checkUrl()) ?? [],
+            'menu' => config('site.menu.' . checkUrl()) ?? [],
             'infoConfig' => config('site.app.info') ?? [],
         ]);
 
