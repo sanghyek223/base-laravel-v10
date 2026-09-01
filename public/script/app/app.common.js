@@ -1,6 +1,8 @@
 "use strict";
 
 let script_lang = 'KR'; // KR or ENG
+let popupMinWidth = 500;
+let popupMinHeight = 600;
 
 $(function () {
     if ($('form').length > 0) {
@@ -33,26 +35,6 @@ $.ajaxSetup({
     headers: {
         "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
     },
-});
-
-// window popup
-$(document).on('click', '.call-popup', function (e) {
-    e.preventDefault();
-
-    const popupWidth = isEmpty($(this).data('width')) ? 500 : $(this).data('width');
-    const popupHeight = isEmpty($(this).data('height')) ? 700 : $(this).data('height');
-    const popName = isEmpty($(this).data('name')) ? 'popup' : $(this).data('name');
-    const popupY = (window.screen.height / 2) - (popupHeight / 2);
-    const popupX = (window.screen.width / 2) - (popupWidth / 2);
-
-    window.open($(this).attr('href'), popName, 'status=no, height=' + popupHeight + ', width=' + popupWidth + ', left=' + popupX + ', top=' + popupY);
-});
-
-// popup cancel btn
-$(document).on('click', '#popup_cancel_btn', function () {
-    if (confirm('취소 하시겠습니까?')) {
-        window.close();
-    }
 });
 
 const callDatePicker = () => {
@@ -1193,6 +1175,24 @@ const callPostCode = (callback) => {
         }
     }).open();
 }
+
+// window popup 호출
+$(document).on('click', '.call-popup', function (e) {
+    e.preventDefault();
+
+    const _this = $(this);
+    const data = _this.data();
+
+    const width = isEmpty(data.width) ? popupMinWidth : data.width;
+    const height = isEmpty(data.height) ? popupMinHeight : data.height;
+    const name = isEmpty(data.name) ? 'popup' : data.name;
+
+    const popupY = (window.screen.height / 2) - (height / 2);
+    const popupX = (window.screen.width / 2) - (width / 2);
+    const option = `status=no, height=${height}, width=${width}, left=${popupX}, top=${popupY}`;
+
+    window.open(_this.attr('href'), name, option);
+});
 
 // 숫자만 입력
 $(document).on("keyup", "input[onlyNumber]", function () {
