@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Services\Auth\LoginServices;
 use Illuminate\Http\Request;
 
 class LoginController extends Controller
@@ -12,7 +11,7 @@ class LoginController extends Controller
 
     public function __construct()
     {
-        $this->loginServices = (new LoginServices());
+        $this->loginServices = (new \App\Services\Auth\LoginServices());
 
         view()->share([
             'main_key' => 'GUEST',

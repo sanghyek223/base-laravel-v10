@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\AgentMail;
 
 use App\Http\Controllers\Controller;
-use App\Services\AgentMail\AgentMailServices;
 use Illuminate\Support\Facades\View;
 use Illuminate\Http\Request;
 
@@ -13,7 +12,7 @@ class AgentMailController extends Controller
 
     public function __construct()
     {
-        $this->agentMailServices = (new AgentMailServices());
+        $this->agentMailServices = (new \App\Services\AgentMail\AgentMailServices());
     }
 
     public function template(Request $request)

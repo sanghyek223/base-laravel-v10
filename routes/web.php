@@ -10,14 +10,28 @@ use Illuminate\Support\Facades\Route;
 
 // main
 Route::controller(\App\Http\Controllers\Main\MainController::class)->group(function () {
-    Route::get('/', 'main')->name('main');
+    Route::get('/', 'index')->name('main');
     Route::post('data', 'data')->name('main.data');
 });
 
-// mypage
+// Mypage
 Route::controller(\App\Http\Controllers\Mypage\MypageController::class)->middleware('auth.check')->prefix('mypage')->group(function () {
     Route::get('/', 'index')->name('mypage');
     Route::post('data', 'data')->name('mypage.data');
+});
+
+// 게시판
+Route::controller(\App\Http\Controllers\Board\BoardController::class)->middleware('board.check')->prefix('board/{code}')->group(function () {
+    Route::get('/', 'index')->name('board');
+    Route::get('view/{sid}', 'view')->name('board.view');
+    Route::get('upsert/{sid?}', 'upsert')->name('board.upsert');
+    Route::post('data', 'data')->name('board.data');
+
+    Route::controller(\App\Http\Controllers\Board\ReplyController::class)->prefix('reply')->group(function () {
+        Route::get('{b_sid}/view/{sid}', 'view')->name('board.reply.view');
+        Route::get('{b_sid}/upsert/{sid?}', 'upsert')->name('board.reply.upsert');
+        Route::post('data', 'data')->name('board.reply.data');
+    });
 });
 
 // auth

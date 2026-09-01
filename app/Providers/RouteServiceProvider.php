@@ -38,7 +38,6 @@ class RouteServiceProvider extends ServiceProvider
 
                 case 'admin' :
                     Route::middleware(['web', 'cryptoDecrypt', 'XSS.defense', 'auth.check'])
-                        ->prefix('admin')
                         ->group(base_path('routes/admin.php'));
                     break;
 

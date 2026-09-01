@@ -28,7 +28,9 @@ class CreateBoardPopupsTable extends Migration
             $table->string('popup_link')->nullable()->comment('팝업 상세보기 링크');
             $table->string('popup_sDate')->nullable()->comment('팝업 시작일');
             $table->string('popup_eDate')->nullable()->comment('팝업 종료일');
+
             $table->timestamps();
+
             $table->comment('게시판 팝업 테이블');
         });
     }

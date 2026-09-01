@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin\Stat;
 
 use App\Http\Controllers\Controller;
-use App\Services\Admin\Stat\StatServices;
 use Illuminate\Http\Request;
 
 class StatController extends Controller
@@ -12,10 +11,11 @@ class StatController extends Controller
 
     public function __construct()
     {
-        $this->statServices = (new StatServices());
+        $this->statServices = (new \App\Services\Admin\Stat\StatServices());
+
         view()->share([
-            'statConfig' => getConfig('stat'),
             'main_key' => 'stat',
+            'statConfig' => config('site.stat'),
         ]);
     }
 

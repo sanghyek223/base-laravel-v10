@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\CommonServices;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
@@ -14,34 +13,34 @@ class Controller extends BaseController
 
     protected $data = [];
 
-    protected $CommonServices;
+    protected $commonServices;
 
     public function __construct()
     {
-        $this->CommonServices = (new CommonServices());
+        $this->commonServices = (new \App\Services\CommonServices());
+    }
+
+    public function captchaMake(Request $request)
+    {
+        return $this->commonServices->captchaMakeService();
     }
 
     public function tinyUpload(Request $request)
     {
         return [
-            'location' => $this->CommonServices->fileUploadService($request->file('file'), '/tinymce')['realfile'],
+            'location' => $this->commonServices->fileUploadService($request->file('file'), '/tinymce')['realfile'],
         ];
     }
 
     public function plUpload(Request $request)
     {
-        return $this->CommonServices->fileUploadService($request->file('file'), $request->directory);
+        return $this->commonServices->fileUploadService($request->file('file'), $request->directory);
     }
 
-    public function fileDownload(Request $request)
+    public function download(Request $request)
     {
         return ($request->type === 'only')
-            ? $this->CommonServices->fileDownloadService($request)
-            : $this->CommonServices->zipDownloadService($request);
-    }
-
-    public function captchaMake(Request $request)
-    {
-        return $this->CommonServices->captchaMakeService();
+            ? $this->commonServices->fileDownloadService($request)
+            : $this->commonServices->zipDownloadService($request);
     }
 }

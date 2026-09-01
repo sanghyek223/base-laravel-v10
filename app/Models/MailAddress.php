@@ -14,8 +14,7 @@ class MailAddress extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+
     ];
 
     protected static function booted()

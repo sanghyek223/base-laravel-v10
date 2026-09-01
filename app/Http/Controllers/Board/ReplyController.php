@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Board;
 
 use App\Http\Controllers\Controller;
-use App\Services\Board\ReplyServices;
 use Illuminate\Http\Request;
 
 class ReplyController extends Controller
@@ -14,8 +13,8 @@ class ReplyController extends Controller
     public function __construct()
     {
         $code = request()->code ?? '';
-        $this->boardConfig = getConfig("board")[$code] ?? [];
-        $this->replyServices = new ReplyServices();
+        $this->boardConfig = config("site.board.{$code}") ?? [];
+        $this->replyServices = (new \App\Services\Board\ReplyServices());
 
         view()->share([
             'boardConfig' => $this->boardConfig,

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin\Member;
 
 use App\Http\Controllers\Controller;
-use App\Services\Admin\Member\MemberServices;
 use Illuminate\Http\Request;
 
 class MemberController extends Controller
@@ -12,11 +11,11 @@ class MemberController extends Controller
 
     public function __construct()
     {
-        $this->memberServices = (new MemberServices());
+        $this->memberServices = (new \App\Services\Admin\Member\MemberServices());
 
         view()->share([
-            'userConfig' => getConfig('user'),
             'main_key' => 'M1',
+            'userConfig' => (new \App\Models\User())->getUserConfig(),
         ]);
     }
 

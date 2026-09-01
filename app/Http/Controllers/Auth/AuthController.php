@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Services\Auth\AuthServices;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
@@ -12,18 +11,18 @@ class AuthController extends Controller
 
     public function __construct()
     {
-        $this->authServices = (new AuthServices());
+        $this->authServices = (new \App\Services\Auth\AuthServices());
 
         view()->share([
             'main_key' => 'GUEST',
-            'userConfig' => getConfig('user'),
+            'userConfig' => (new \App\Models\User())->getUserConfig(),
         ]);
     }
 
     public function signup(Request $request)
     {
         view()->share(['sub_key' => 'S2']);
-        
+
         return response()
             ->view('auth.signup.index', $this->authServices->signupAction($request))
             ->header('Cache-Control', 'no-store, no-cache, must-revalidate');

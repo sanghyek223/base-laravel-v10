@@ -20,7 +20,10 @@ class CreateBoardFilesTable extends Migration
             $table->string('realfile')->comment('파일경로');
             $table->string('filename')->comment('원본 파일명');
             $table->integer('download')->unsigned()->default(0)->comment('다운로드 수');
+
             $table->timestamps();
+            $table->softDeletes()->comment('삭제일');
+
             $table->comment('게시판 첨부파일');
         });
     }

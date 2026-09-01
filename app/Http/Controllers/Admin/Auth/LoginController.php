@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Services\Admin\Auth\LoginServices;
 use Illuminate\Http\Request;
 
 class LoginController extends Controller
@@ -12,7 +11,7 @@ class LoginController extends Controller
 
     public function __construct()
     {
-        $this->loginServices = (new LoginServices());
+        $this->loginServices = (new \App\Services\Admin\Auth\LoginServices());
     }
 
     public function logout(Request $request)

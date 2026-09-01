@@ -18,9 +18,6 @@ class MailList extends Model
     protected $casts = [
         'level' => 'array',
         'send_date' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime',
     ];
 
     protected static function booted()

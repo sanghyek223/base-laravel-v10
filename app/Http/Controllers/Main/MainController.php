@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Main;
 
 use App\Http\Controllers\Controller;
-use App\Services\Main\MainServices;
 use Illuminate\Http\Request;
 
 class MainController extends Controller
@@ -12,10 +11,14 @@ class MainController extends Controller
 
     public function __construct()
     {
-        $this->mainServices = (new MainServices());
+        $this->mainServices = (new \App\Services\Main\MainServices());
+
+        view()->share([
+
+        ]);
     }
 
-    public function main(Request $request)
+    public function index(Request $request)
     {
         return view('index', $this->mainServices->indexService($request));
     }

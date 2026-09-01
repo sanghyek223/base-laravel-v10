@@ -20,9 +20,10 @@ return new class extends Migration
             $table->unsignedInteger('thread')->default(0)->comment('들여쓰기');
             $table->string('writer')->comment('작성자');
             $table->longText('comment')->comment('댓글 내용');
-            $table->timestamp('created_at')->nullable();
-            $table->timestamp('updated_at')->nullable();
+
+            $table->timestamps();
             $table->softDeletes()->comment('삭제일');
+
             $table->comment('게시판 댓글');
         });
     }

@@ -15,9 +15,7 @@ class BoardComment extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime',
+
     ];
 
     protected static function booted()

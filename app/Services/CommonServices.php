@@ -18,7 +18,7 @@ use Maatwebsite\Excel\Facades\Excel;
  */
 class CommonServices extends AppServices
 {
-    private function filenameRegx(string $filename): string
+    public function filenameRegx(string $filename): string
     {
         // 파일명에 허용되지않는 특수문자 제거
         return preg_replace("/[ #\&\+\-%@=\/\\\:;,\'\"\^`~\_|\!\?\*$#<>()\[\]\{\}]/i", ' ', $filename);
@@ -39,18 +39,18 @@ class CommonServices extends AppServices
 
     public function fileDeleteService(string $realfile)
     {
-        if (File::exists(public_path($realfile))) {
-            File::delete(public_path($realfile));
+        $public_path = public_path($realfile);
+
+        if (File::exists($public_path)) {
+            File::delete($public_path);
         }
     }
 
     public function fileDownloadService(Request $request)
-
     {
-        $tbl = $request->tbl;
         $sid = deCryptString($request->sid);
 
-        switch ($tbl) {
+        switch ($request->case) {
             case 'board':
                 $field = $request->field;
                 $isThumbnail = ($field == 'thumbnail');
@@ -64,14 +64,27 @@ class CommonServices extends AppServices
                 $this->data = ['realfile' => $board->{$pathField}, 'filename' => $board->{$nameField}];
                 break;
 
-            case 'boardFile':
+            case 'board-file':
                 $boardFile = BoardFile::findOrFail($sid);
                 $boardFile->increment('download');
 
                 $this->data = ['realfile' => $boardFile->realfile, 'filename' => $boardFile->filename];
                 break;
 
-            case 'boardReplyFile':
+            case 'reply':
+                $field = $request->field;
+                $isThumbnail = ($field == 'thumbnail');
+                $pathField = ($isThumbnail) ? 'thumbnail_realfile' : "realfile{$field}";
+                $nameField = ($isThumbnail) ? 'thumbnail_filename' : "filename{$field}";
+                $downloadField = ($isThumbnail) ? 'thumbnail_download' : "file{$field}_download";
+
+                $board = BoardReply::findOrFail($sid);
+                $board->increment($downloadField);
+
+                $this->data = ['realfile' => $board->{$pathField}, 'filename' => $board->{$nameField}];
+                break;
+
+            case 'reply-file':
                 $boardReplyFile = BoardReplyFile::findOrFail($sid);
                 $boardReplyFile->increment('download');
 
@@ -96,28 +109,30 @@ class CommonServices extends AppServices
 
     public function zipDownloadService(Request $request)
     {
-        $tbl = $request->tbl;
         $sid = deCryptString($request->sid);
 
-        switch ($tbl) {
+        switch ($request->case) {
             case 'board': // 게시판 plupload 파일 일괄 다운로드
                 $board = Board::findOrFail($sid);
                 $board->files()->increment('download');
 
-                $this->data = $this->makeZip("{$board->subject}.zip", $board->files, $request->password ?? null);
+                $password = $request->password ?? null;
+
+                $this->data = $this->makeZip("{$board->subject}.zip", $board->files, $password);
                 break;
 
-            case 'boardReply': // 게시판 답글 plupload 파일 일괄 다운로드
+            case 'reply': // 게시판 답글 plupload 파일 일괄 다운로드
                 $boardReply = BoardReply::findOrFail($sid);
                 $boardReply->files()->increment('download');
 
-                $this->data = $this->makeZip("{$boardReply->subject}.zip", $boardReply->files, $request->password ?? null);
+                $password = $request->password ?? null;
+
+                $this->data = $this->makeZip("{$boardReply->subject}.zip", $boardReply->files, $password);
                 break;
 
             default:
                 return notFoundRedirect();
         }
-
 
         return (File::exists($this->data['realfile']))
             ? response()->download($this->data['realfile'], $this->data ['filename'])->deleteFileAfterSend(true)

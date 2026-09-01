@@ -4,19 +4,19 @@ namespace App\Models;
 
 use App\Services\CommonServices;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 
 class BoardReply extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $primaryKey = 'sid';
 
     protected $guarded = [];
 
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+
     ];
 
     protected static function booted()
@@ -75,6 +75,58 @@ class BoardReply extends Model
         $this->subject = $data['subject'];
         $this->contents = $data['contents'] ?? null;
         $this->link_url = $data['link_url'] ?? null;
+
+        /* 첨부파일 업로드 or 삭제 */
+        if ($data instanceof \Illuminate\Http\Request) { // $data 가 Request 객체일때만.
+            foreach($boardConfig['file'] as $key => $val) {
+                $file = $data->file("file" . $key) ?? null; // 첨부파일
+                $fileDel = $data->{"file" . $key . '_del'} ?? ''; // 파일삭제
+                $pathField = 'realfile' . $key; // 파일 경로 데이터 저장 컬럼
+                $nameField = 'filename' . $key; // 파일 이름 데이터 저장 컬럼
+
+                // 파일 삭제이면서 기존 첨부파일 있을경우 경로에 있는 실제 파일 삭제
+                if (($fileDel == 'Y') && !is_null($this->{$pathField})) {
+                    (new CommonServices())->fileDeleteService($this->{$pathField});
+
+                    // 첨부파일이 없다면 기존 파일경로 및 파일명 초기화
+                    if (is_null($file)) {
+                        $this->{$pathField} = null;
+                        $this->{$nameField} = null;
+                    }
+                }
+
+                // 첨부파일 있을경우 업로드후 경로 저장
+                if ($file) {
+                    $directory = "{$boardConfig['directory']}/reply";
+                    $uploadFile = (new CommonServices())->fileUploadService($file, $directory);
+                    $this->{$pathField} = $uploadFile['realfile'];
+                    $this->{$nameField} = $uploadFile['filename'];
+                }
+            }
+
+            /* 썸네일 파일 업로드 or 삭제 */
+            $thumbnail = $data->file("thumbnail") ?? null; // 썸네일 첨부파일
+            $thumbnailDel = $data->thumbnail_del ?? ''; // 썸네일 파일삭제
+
+            // 파일 삭제이면서 기존 썸네일 있을경우 경로에 있는 실제 파일 삭제
+            if (($thumbnailDel == 'Y') && !is_null($this->thumbnail_realfile)) {
+                (new CommonServices())->fileDeleteService($this->thumbnail_realfile);
+
+                // 썸네일 없다면 기존 파일경로 및 파일명 초기화
+                if (is_null($thumbnail)) {
+                    $this->thumbnail_realfile = null;
+                    $this->thumbnail_filename = null;
+                }
+            }
+
+            // 썸네일 있을경우 업로드후 경로 저장
+            if ($thumbnail) {
+                $directory = $boardConfig['directory'] . '/thumbnail';
+                $uploadFile = (new CommonServices())->fileUploadService($thumbnail, $directory);
+                $this->thumbnail_realfile = $uploadFile['realfile'];
+                $this->thumbnail_filename = $uploadFile['filename'];
+            }
+        }
     }
 
     public function user()
@@ -92,6 +144,21 @@ class BoardReply extends Model
         return $this->hasMany(BoardReplyFile::class, 'br_sid');
     }
 
+    public function downloadUrl($field) // 게시판 단일 첨부 파일 다운로드
+    {
+        /*
+         type => only: 단일, zip: 일괄다운(zip),
+         case => switch 문 구분값,
+         sid => 키값 enCryptString(sid) 로 암호화해서 전송
+        */
+
+        $type = 'only';
+        $case = 'reply';
+        $sid = enCryptString($this->sid);
+
+        return url("common/download/{$type}/{$case}/{$sid}?field={$field}");
+    }
+
     public function plDownloadUrl() // 게시판 plupload 전체 파일 다운로드
     {
         switch ($this->files()->count()) {
@@ -102,15 +169,18 @@ class BoardReply extends Model
                 return $this->files[0]->download();
 
             default: // 게시판 plupload 파일이 여러개일 경우 압축 파일로 다운로드
-                // 관리자 경로로 셋팅될때 있어서 수동으로
 
                 /*
-                 'type' => 'zip',
-                 'tbl' => 'boardReply',
-                 'sid' => enCryptString($this->sid),
+                 type => only: 단일, zip: 일괄다운(zip),
+                 case => switch 문 구분값,
+                 sid => 키값 enCryptString(sid) 로 암호화해서 전송
                 */
 
-                return url('common/fileDownload/zip/boardReply/' . enCryptString($this->sid));
+                $type = 'zip';
+                $case = 'reply';
+                $sid = enCryptString($this->sid);
+
+                return url("common/download/{$type}/{$case}/{$sid}");
         }
     }
 

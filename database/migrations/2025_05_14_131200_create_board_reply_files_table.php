@@ -18,8 +18,9 @@ return new class extends Migration
             $table->string('realfile')->comment('파일경로');
             $table->string('filename')->comment('원본 파일명');
             $table->unsignedInteger('download')->default(0)->comment('다운로드 수');
-            $table->timestamp('created_at')->nullable();
-            $table->timestamp('updated_at')->nullable();
+
+            $table->timestamps();
+            $table->softDeletes()->comment('삭제일');
 
             $table->comment('게시판 답글 첨부파일');
         });

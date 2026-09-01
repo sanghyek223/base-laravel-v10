@@ -12,10 +12,9 @@ class BoardCounter extends Model
     protected $primaryKey = 'sid';
 
     protected $guarded = [];
-    
+
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+
     ];
 
     public function setByData($data)

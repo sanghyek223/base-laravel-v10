@@ -24,9 +24,6 @@ class User extends Authenticatable
 
     protected $casts = [
         'password_at' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime',
     ];
 
     protected static function booted()
@@ -34,9 +31,14 @@ class User extends Authenticatable
         parent::boot();
     }
 
-    private function userConfig()
+    protected function userConfig()
     {
-        return getConfig('user');
+        return config('site.user');
+    }
+
+    public function getUserConfig()
+    {
+        return $this->userConfig();
     }
 
     public function setByData($data)

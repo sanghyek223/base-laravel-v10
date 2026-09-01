@@ -14,11 +14,11 @@ class MailController extends Controller
     public function __construct()
     {
         $this->mailServices = (new MailServices());
-        $this->mailConfig = getConfig('mail');
-        
+        $this->mailConfig = config('site.mail');
+
         view()->share([
-            'mailConfig' => $this->mailConfig,
             'main_key' => 'mail',
+            'mailConfig' => $this->mailConfig,
         ]);
     }
 
@@ -36,7 +36,7 @@ class MailController extends Controller
     {
         return view('admin.mail.detail', $this->mailServices->detailService($request));
     }
-    
+
     public function preview(Request $request)
     {
         $data = $this->mailServices->previewService($request);

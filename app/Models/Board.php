@@ -4,19 +4,19 @@ namespace App\Models;
 
 use App\Services\CommonServices;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 
 class Board extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $primaryKey = 'sid';
 
     protected $guarded = [];
 
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+
     ];
 
     protected static function booted()
@@ -210,17 +210,19 @@ class Board extends Model
         return $this->hasMany(BoardComment::class, 'b_sid')->withTrashed();
     }
 
-    public function downloadUrl($field) // 게시판 첨부 파일 다운로드
+    public function downloadUrl($field) // 게시판 단일 첨부 파일 다운로드
     {
-        // 관리자 경로로 셋팅될때 있어서 수동으로
-
         /*
-         'type' => 'only',
-         'tbl' => 'board',
-         'sid' => enCryptString($this->sid),
+         type => only: 단일, zip: 일괄다운(zip),
+         case => switch 문 구분값,
+         sid => 키값 enCryptString(sid) 로 암호화해서 전송
         */
 
-        return url('common/fileDownload/only/board/' . enCryptString($this->sid) . "?field={$field}");
+        $type = 'only';
+        $case = 'board';
+        $sid = enCryptString($this->sid);
+
+        return url("common/download/{$type}/{$case}/{$sid}?field={$field}");
     }
 
     public function plDownloadUrl() // 게시판 plupload 전체 파일 다운로드
@@ -233,15 +235,18 @@ class Board extends Model
                 return $this->files[0]->download();
 
             default: // 게시판 plupload 파일이 여러개일 경우 압축 파일로 다운로드
-                // 관리자 경로로 셋팅될때 있어서 수동으로
 
                 /*
-                 'type' => 'zip',
-                 'tbl' => 'board',
-                 'sid' => enCryptString($this->sid),
+                 type => only: 단일, zip: 일괄다운(zip),
+                 case => switch 문 구분값,
+                 sid => 키값 enCryptString(sid) 로 암호화해서 전송
                 */
 
-                return url('common/fileDownload/zip/board/' . enCryptString($this->sid));
+                $type = 'zip';
+                $case = 'board';
+                $sid = enCryptString($this->sid);
+
+                return url("common/download/{$type}/{$case}/{$sid}");
         }
     }
 

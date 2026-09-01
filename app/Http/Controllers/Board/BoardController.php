@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Board;
 
 use App\Http\Controllers\Controller;
-use App\Services\Board\BoardServices;
 use Illuminate\Http\Request;
 
 class BoardController extends Controller
@@ -14,8 +13,8 @@ class BoardController extends Controller
     public function __construct()
     {
         $code = request()->code ?? '';
-        $this->boardConfig = getConfig("board")[$code] ?? [];
-        $this->boardServices = new BoardServices();
+        $this->boardConfig = config("site.board.{$code}") ?? [];
+        $this->boardServices = (new \App\Services\Board\BoardServices());
 
         view()->share([
             'boardConfig' => $this->boardConfig,

@@ -3,35 +3,36 @@
 namespace App\Http\Controllers\Admin\Mail;
 
 use App\Http\Controllers\Controller;
-use App\Services\Admin\Mail\MailAddressDetailServices;
 use Illuminate\Http\Request;
 
 class MailAddressDetailController extends Controller
 {
-    private $mailAddressDetailServices;
+    private $addressDetailServices;
+    private $mailConfig;
 
     public function __construct()
     {
-        $this->mailAddressDetailServices = (new MailAddressDetailServices());
+        $this->addressDetailServices = (new \App\Services\Admin\Mail\MailAddressDetailServices());
+        $this->mailConfig = config('site.mail');
 
         view()->share([
-            'mailConfig' => getConfig('mail'),
             'main_key' => 'mail',
+            'mailConfig' => $this->mailConfig,
         ]);
     }
 
     public function index(Request $request)
     {
-        return view('admin.mail.address.detail.index', $this->mailAddressDetailServices->indexService($request));
+        return view('admin.mail.address.detail.index', $this->addressDetailServices->indexService($request));
     }
 
     public function upsert(Request $request)
     {
-        return view("admin.mail.address.detail.upsert-{$request->type}", $this->mailAddressDetailServices->upsertService($request));
+        return view("admin.mail.address.detail.upsert-{$request->type}", $this->addressDetailServices->upsertService($request));
     }
 
     public function data(Request $request)
     {
-        return $this->mailAddressDetailServices->dataAction($request);
+        return $this->addressDetailServices->dataAction($request);
     }
 }

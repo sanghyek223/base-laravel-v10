@@ -20,9 +20,29 @@ return new class extends Migration
             $table->string('subject')->comment('제목');
             $table->longText('contents')->comment('내용');
             $table->string('link_url')->nullable()->comment('링크 url');
+            $table->string('realfile1')->nullable()->comment('단일 파일1 파일경로');
+            $table->string('filename1')->nullable()->comment('단일 파일1 파일명');
+            $table->integer('file1_download')->unsigned()->default(0)->comment('단일 파일1 다운로드수');
+            $table->string('realfile2')->nullable()->comment('단일 파일2 파일경로');
+            $table->string('filename2')->nullable()->comment('단일 파일2 파일명');
+            $table->integer('file2_download')->unsigned()->default(0)->comment('단일 파일2 다운로드수');
+            $table->string('realfile3')->nullable()->comment('단일 파일3 파일경로');
+            $table->string('filename3')->nullable()->comment('단일 파일3 파일명');
+            $table->integer('file3_download')->unsigned()->default(0)->comment('단일 파일3 다운로드수');
+            $table->string('realfile4')->nullable()->comment('단일 파일4 파일경로');
+            $table->string('filename4')->nullable()->comment('단일 파일4 파일명');
+            $table->integer('file4_download')->unsigned()->default(0)->comment('단일 파일4 다운로드수');
+            $table->string('realfile5')->nullable()->comment('단일 파일5 파일경로');
+            $table->string('filename5')->nullable()->comment('단일 파일5 파일명');
+            $table->integer('file5_download')->unsigned()->default(0)->comment('단일 파일5 다운로드수');
+            $table->string('thumbnail_realfile')->nullable()->comment('썸네일 파일경로');
+            $table->string('thumbnail_filename')->nullable()->comment('썸네일 파일명');
+            $table->integer('thumbnail_download')->unsigned()->default(0)->comment('썸네일 다운로드수');
             $table->unsignedInteger('ref')->default(0)->comment('조회수');
-            $table->timestamp('created_at')->nullable();
-            $table->timestamp('updated_at')->nullable();
+
+            $table->timestamps();
+            $table->softDeletes()->comment('삭제일');
+
             $table->comment('게시판 답글');
         });
     }

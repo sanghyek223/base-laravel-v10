@@ -55,7 +55,10 @@ class CreateBoardsTable extends Migration
             $table->enum('hide', ['Y', 'N'])->default('N')->comment('노출 설정');
             $table->enum('secret', ['Y', 'N'])->default('N')->comment('비밀글 설정');
             $table->integer('ref')->unsigned()->default(0)->comment('조회수');
+
             $table->timestamps();
+            $table->softDeletes()->comment('삭제일');
+
             $table->comment('게시판 테이블');
         });
     }
