@@ -7,11 +7,11 @@ $(function () {
         $('form[method=post]').attr('onsubmit', 'return false;');
     }
 
-    if ($('.datepicker').length > 0) {
+    if ($('input:text[datepicker]').length > 0) {
         callDatePicker();
     }
 
-    if ($('.datetimepicker').length > 0) {
+    if ($('input:text[datetimepicker]').length > 0) {
         callDateTimePicker();
     }
 
@@ -58,7 +58,7 @@ $(document).on('click', '#popup_cancel_btn', function () {
 const callDatePicker = () => {
     let datepicker = {};
 
-    $('.datepicker').each(function (k, v) {
+    $('input:text[datepicker]').each(function (k, v) {
         const $el = $(v);
 
         // data 값 읽기
@@ -99,7 +99,7 @@ const callDatePicker = () => {
 const callDateTimePicker = () => {
     let datetimepicker = {};
 
-    $('.datetimepicker').each(function (k, v) {
+    $('input:text[datetimepicker]').each(function (k, v) {
         const $el = $(v);
 
         // data 값 읽기
