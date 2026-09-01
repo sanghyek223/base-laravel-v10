@@ -23,9 +23,9 @@ class BoardComment extends Model
         parent::boot();
     }
 
-    public function setByData($data)
+    public function firstSet($data)
     {
-        if (empty($this->sid)) {
+        if (!$this->sid) {
             $this->b_sid = $data['b_sid'];
             $this->u_sid = $data['u_sid'] ?? thisPK();
             $this->depth1 = $data['depth1'] ?? 0;
@@ -40,6 +40,11 @@ class BoardComment extends Model
                 $this->thread = 2;
             }
         }
+    }
+
+    public function setByData($data)
+    {
+        $this->firstSet($data);
 
         $this->writer = $data['comment_writer'];
         $this->comment = $data['comment'];

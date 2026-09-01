@@ -28,12 +28,17 @@ class BoardFile extends Model
         });
     }
 
-    public function setByData($data, $b_sid)
+    public function firstSet($data)
     {
-        if (empty($this->sid)) {
-            $this->b_sid = $b_sid;
+        if (!$this->sid) {
+            $this->b_sid = $data['b_sid'];
             $this->u_sid = $data['u_sid'] ?? thisPK();
         }
+    }
+
+    public function setByData($data)
+    {
+        $this->firstSet($data);
 
         $this->realfile = $data['realfile'];
         $this->filename = $data['filename'];

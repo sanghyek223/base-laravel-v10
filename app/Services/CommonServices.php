@@ -54,6 +54,7 @@ class CommonServices extends AppServices
             case 'board':
                 $field = $request->field;
                 $isThumbnail = ($field == 'thumbnail');
+
                 $pathField = ($isThumbnail) ? 'thumbnail_realfile' : "realfile{$field}";
                 $nameField = ($isThumbnail) ? 'thumbnail_filename' : "filename{$field}";
                 $downloadField = ($isThumbnail) ? 'thumbnail_download' : "file{$field}_download";
@@ -61,41 +62,28 @@ class CommonServices extends AppServices
                 $board = Board::findOrFail($sid);
                 $board->increment($downloadField);
 
-                $this->data = ['realfile' => $board->{$pathField}, 'filename' => $board->{$nameField}];
+                $this->data = ['realfile' => $board?->{$pathField}, 'filename' => $board?->{$nameField}];
                 break;
 
             case 'board-file':
                 $boardFile = BoardFile::findOrFail($sid);
                 $boardFile->increment('download');
 
-                $this->data = ['realfile' => $boardFile->realfile, 'filename' => $boardFile->filename];
-                break;
-
-            case 'reply':
-                $field = $request->field;
-                $isThumbnail = ($field == 'thumbnail');
-                $pathField = ($isThumbnail) ? 'thumbnail_realfile' : "realfile{$field}";
-                $nameField = ($isThumbnail) ? 'thumbnail_filename' : "filename{$field}";
-                $downloadField = ($isThumbnail) ? 'thumbnail_download' : "file{$field}_download";
-
-                $board = BoardReply::findOrFail($sid);
-                $board->increment($downloadField);
-
-                $this->data = ['realfile' => $board->{$pathField}, 'filename' => $board->{$nameField}];
+                $this->data = ['realfile' => $boardFile?->realfile, 'filename' => $boardFile?->filename];
                 break;
 
             case 'reply-file':
                 $boardReplyFile = BoardReplyFile::findOrFail($sid);
                 $boardReplyFile->increment('download');
 
-                $this->data = ['realfile' => $boardReplyFile->realfile, 'filename' => $boardReplyFile->filename];
+                $this->data = ['realfile' => $boardReplyFile?->realfile, 'filename' => $boardReplyFile?->filename];
                 break;
 
             case 'mail':
                 $mailFile = MailFile::findOrFail($sid);
                 $mailFile->increment('download');
 
-                $this->data = ['realfile' => $mailFile->realfile, 'filename' => $mailFile->filename];
+                $this->data = ['realfile' => $mailFile?->realfile, 'filename' => $mailFile?->filename];
                 break;
 
             default:

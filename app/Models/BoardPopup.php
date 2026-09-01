@@ -17,12 +17,17 @@ class BoardPopup extends Model
 
     ];
 
-    public function setByData($data, $b_sid)
+    public function firstSet($data)
     {
-        if (empty($this->sid)) {
-            $this->b_sid = $b_sid;
-            $this->u_sid = thisPK();
+        if (!$this->sid) {
+            $this->b_sid = $data['b_sid'];
+            $this->u_sid = $data['u_sid'] ?? thisPK();
         }
+    }
+
+    public function setByData($data)
+    {
+        $this->firstSet($data);
 
         $popup_select = $data['popup_select'];
         $popup_detail = $data['popup_detail'] ?? 'N';

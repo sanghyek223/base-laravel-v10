@@ -21,7 +21,7 @@ class MemberExcel implements FromQuery, WithMapping, WithHeadings, ShouldAutoSiz
 
     public function __construct($data)
     {
-        $this->userConfig = getConfig('user');
+        $this->userConfig = (new \App\Models\User())->getUserConfig();
         $this->query = $data['query'];
         $this->total = $data['total'];
     }

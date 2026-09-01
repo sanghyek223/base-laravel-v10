@@ -20,8 +20,9 @@ return new class extends Migration
             $table->string('mobile')->comment('휴대폰');
             $table->string('email')->comment('이메일');
             $table->string('license_number')->nullable()->comment('면허번호');
-            $table->timestamps();
+            $table->enum('imsi_password', ['N', 'Y'])->default('N')->comment('임시비밀번호 유무');
             $table->timestamp('password_at')->nullable()->comment('비밀번호 변경 시간');
+            $table->timestamps();
             $table->softDeletes()->comment('삭제일');
 
             $table->comment('회원 테이블');

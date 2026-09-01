@@ -20,9 +20,9 @@ class Controller extends BaseController
         $this->commonServices = (new \App\Services\CommonServices());
     }
 
-    public function captchaMake(Request $request)
+    public function plUpload(Request $request)
     {
-        return $this->commonServices->captchaMakeService();
+        return $this->commonServices->fileUploadService($request->file('file'), $request->directory);
     }
 
     public function tinyUpload(Request $request)
@@ -32,15 +32,15 @@ class Controller extends BaseController
         ];
     }
 
-    public function plUpload(Request $request)
-    {
-        return $this->commonServices->fileUploadService($request->file('file'), $request->directory);
-    }
-
     public function download(Request $request)
     {
         return ($request->type === 'only')
             ? $this->commonServices->fileDownloadService($request)
             : $this->commonServices->zipDownloadService($request);
+    }
+
+    public function captchaMake(Request $request)
+    {
+        return $this->commonServices->captchaMakeService();
     }
 }

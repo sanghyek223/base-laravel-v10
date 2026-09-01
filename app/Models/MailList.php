@@ -35,17 +35,19 @@ class MailList extends Model
         });
 
         static::saved(function ($mail) {
+            request()->merge(['ml_sid' => $mail->sid]);
+
             $data = request();
             $plupload_file = $data->plupload_file;
             $plupload_file_del = $data->plupload_file_del;
 
-            $ml_sid = $mail->sid;
-
             if (!empty($plupload_file)) {
                 /* 첨부파일 (plupload) */
                 foreach (json_decode($plupload_file, true) as $row) {
+                    $row['ml_sid'] = $mail->sid;
+
                     $file = new MailFile();
-                    $file->setByData($row, $ml_sid);
+                    $file->setByData($row);
                     $file->save();
                 }
             }
@@ -68,9 +70,14 @@ class MailList extends Model
         });
     }
 
-    protected static function mailConfig()
+    protected function mailConfig()
     {
-        return getConfig('mail');
+        return config('site.mail');
+    }
+
+    public function getMailConfig()
+    {
+        return $this->mailConfig();
     }
 
     public function setByData($data)

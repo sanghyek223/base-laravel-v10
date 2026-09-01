@@ -31,17 +31,19 @@ class BoardReply extends Model
         });
 
         static::saved(function ($reply) {
-            $data = request();
+            request()->merge(['br_sid' => $reply->sid]);
 
-            $br_sid = $reply->sid;
+            $data = request();
             $plupload_file = $data->plupload_file ?? [];
             $plupload_file_del = $data->plupload_file_del ?? [];
 
             /* 첨부파일 (plupload) */
             if (!empty($plupload_file)) {
                 foreach (json_decode($plupload_file, true) as $row) { // 첨부파일 (plupload) 등록
+                    $row['br_sid'] = $reply->sid;
+
                     $file = new BoardReplyFile();
-                    $file->setByData($row, $br_sid);
+                    $file->setByData($row);
                     $file->save();
                 }
             }
@@ -55,19 +57,33 @@ class BoardReply extends Model
         });
     }
 
-    protected static function boardConfig($code = null)
+    protected function boardConfig($code)
     {
-        return getConfig("board")[$code ?? request()->code];
+        if (empty($code)) {
+            $code = request()->code;
+        }
+
+        return config("site.board.{$code}");
+    }
+
+    public function getBoardConfig($code = '')
+    {
+        return $this->boardConfig($code);
+    }
+
+    public function firstSet($data)
+    {
+        if (!$this->sid) {
+            $this->b_sid = $data['b_sid'];
+            $this->u_sid = $data['u_sid'] ?? thisPK();
+        }
     }
 
     public function setByData($data)
     {
-        $boardConfig = self::boardConfig($data['code']);
+        $boardConfig = $this->getBoardConfig();
 
-        if (empty($this->sid)) {
-            $this->b_sid = $data['b_sid'];
-            $this->u_sid = $data['u_sid'] ?? thisPK();
-        }
+        $this->firstSet($data);
 
         $this->writer = $data['writer'] ?? null;
         $this->email = $data['email'] ?? null;

@@ -14,9 +14,9 @@ Route::controller(\App\Http\Controllers\Controller::class)->prefix('common')->gr
      */
     Route::get('download/{type}/{case}/{sid}', 'download')->where('type', 'only|zip')->name("download");
 
-    Route::post('captcha-make', 'captchaMake')->name("captcha.make");
-    Route::post('tinyUpload', 'tinyUpload')->name("tinyUpload");
     Route::post('plUpload', 'plUpload')->name("plUpload");
+    Route::post('tinyUpload', 'tinyUpload')->name("tinyUpload");
+    Route::post('captcha-make', 'captchaMake')->name("captcha.make");
 });
 
 /*

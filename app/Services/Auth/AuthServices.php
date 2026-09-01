@@ -144,21 +144,18 @@ class AuthServices extends AppServices
             $uid = trim($request->uid);
             $user = User::where('uid', $uid)->first();
 
-            if (empty($user->sid)) {
+            if (!$user) {
                 return $this->returnJsonData('alert', [
                     'case' => true,
-                    'msg' => 'The ID you entered is incorrect. Please try again',
+                    'msg' => "입력하신 ID가 올바르지 않습니다.\n다시 시도해 주세요",
                     'focus' => '#uid',
                 ]);
             }
 
-            // 임시비밀번호
-            $n1 = random_int(10, 99);
-            $n2 = random_int(10, 99);
-            $temp_pw = $n2 . now()->format('is') . $n1;
+            // 임시 비밀번호 발급
+            $temp_pw = $user->makeTempPassword();
 
-            $user->passwordChange($temp_pw);
-//            $user->imsi_password = 'Y';
+            $user->passwordChange($temp_pw, true);
             $user->update();
 
             // 비밀번호 찾기 메일 발송
@@ -174,7 +171,7 @@ class AuthServices extends AppServices
 
             return $this->returnJsonData('alert', [
                 'case' => true,
-                'msg' => "Your Password has been sent to {$user->uid}",
+                'msg' => "비밀번호가 전송되었습니다.",
 
                 'input' => [
                     $this->ajaxActionInput('#uid', ''),

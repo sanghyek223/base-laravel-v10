@@ -29,12 +29,17 @@ class BoardReplyFile extends Model
         });
     }
 
-    public function setByData($data, $br_sid)
+    private function firstSet($data)
     {
-        if (empty($this->sid)) {
-            $this->br_sid = $br_sid;
+        if (!$this->sid) {
+            $this->br_sid = $data['br_sid'];
             $this->u_sid = $data['u_sid'] ?? thisPK();
         }
+    }
+
+    public function setByData($data)
+    {
+        $this->firstSet($data);
 
         $this->realfile = $data['realfile'];
         $this->filename = $data['filename'];

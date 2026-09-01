@@ -16,47 +16,64 @@ use Illuminate\Http\Request;
 class BoardServices extends AppServices
 {
     private $boardConfig;
+    private $boardCode;
+    private $listUrl;
 
     public function __construct()
     {
-        $this->boardConfig = getConfig('board')[request()->code];
+        $this->boardCode = request()->code;
+        $this->listUrl = route('board', ['code' => $this->boardCode]);
+
+        $this->boardConfig = config("site.board.{$this->boardCode}");
     }
 
-    private function getNoticeList($code)
+    private function defaultQuery($count = false)
     {
-        $noticeQuery = Board::where([
-            'code' => $code,
-            'notice' => 'Y'
-        ])
-            ->withCount('files', 'comments')
-            ->orderByDesc('sid');
+        $query = Board::where([
+            'code' => $this->boardCode,
+        ]);
 
-        if (!isAdmin()) {
-            $noticeQuery->where('hide', 'N');
+        if ($count) {
+            $query->withCount('files', 'comments');
         }
 
-        return $noticeQuery->limit('10')->get();
+        return $query;
+    }
+
+    private function getNoticeList()
+    {
+        $noticeQuery = $this->defaultQuery(true)
+            ->where('notice', 'Y')
+            ->when(!isAdmin(), function ($query) {
+                $query->where('hide', 'N');
+            });
+
+        return $noticeQuery->orderByDesc('sid')->limit('10')->get();
     }
 
     public function listService(Request $request)
     {
-        $code = $request->code;
-        $category = $request->category;
         $search = $request->search;
         $keyword = $request->keyword;
 
-        $notice = $this->getNoticeList($code); // 공지사항
-        $query = Board::where('code', $code)->withCount('files', 'comments')->orderByDesc('sid');
+        $query = $this->defaultQuery(true)->orderByDesc('sid');
 
-        if (!isAdmin()) {
-            $query->where('hide', 'N');
+        // 공지사항 사용
+        if ($this->boardConfig['use']['notice']) {
+            $notice = $this->getNoticeList(); // 공지사항
+
+            // 공지사항 있다면 제외
+            if ($notice->isNotEmpty()) {
+                $query->whereNotIn('sid', $notice->pluck('sid'));
+            }
         }
 
-        if (!empty($category)) {
-            $query->where('category', $category);
+        if ($request->category) {
+            $query->where('category', $request->category);
         }
 
-        if (!empty($search) && !empty($keyword)) {
+        if ($search && $keyword) {
+
             switch ($search) {
                 case 'subject/contents':
                     $query->where(function ($q) use ($keyword) {
@@ -69,13 +86,13 @@ class BoardServices extends AppServices
                     $query->where($search, 'like', "%{$keyword}%");
                     break;
             }
+
         }
 
-        $query->whereNotIn('sid', $notice->pluck('sid'));
         $list = $query->paginate($this->boardConfig['paginate'])->appends($request->query());
 
         $this->data['list'] = setListSeq($list);
-        $this->data['notice'] = $notice;
+        $this->data['notice'] = $notice ?? [];
 
         return $this->data;
     }
@@ -83,8 +100,9 @@ class BoardServices extends AppServices
     public function upsertService(Request $request)
     {
         $sid = $request->sid ?? null;
-        $this->data['board'] = empty($sid) ? null : Board::withCount('files')->findOrFail($sid);
-        $this->data['popup'] = $this->data['board']->popups ?? null;
+
+        $this->data['board'] = empty($sid) ? null : $this->defaultQuery(true)->findOrFail($sid);
+        $this->data['popup'] = $this->data['board']?->popups;
 
         return $this->data;
     }
@@ -93,19 +111,12 @@ class BoardServices extends AppServices
     {
         $sid = $request->sid;
 
-        $this->data['board'] = Board::withCount('files', 'comments')->findOrFail($sid);
+        $board = $this->defaultQuery(true)->findOrFail($sid);
         $this->refCounter($request); // 조회수 업데이트
 
-        $prevBoardQuery = Board::where('sid', '>', $sid)->where('code', $request->code);
-        $nextBoardQuery = Board::where('sid', '<', $sid)->where('code', $request->code);
-
-        if (!isAdmin()) {
-            $prevBoardQuery->where('hide', 'N');
-            $nextBoardQuery->where('hide', 'N');
-        }
-
-        $this->data['prevBoard'] = $prevBoardQuery->orderBy('sid', 'asc')->first();
-        $this->data['nextBoard'] = $nextBoardQuery->orderBy('sid', 'desc')->first();
+        $this->data['board'] = $board;
+        $this->data['prevBoard'] = $this->defaultQuery()->where('sid', '>', $sid)->orderBy('sid', 'asc')->first();
+        $this->data['nextBoard'] = $this->defaultQuery()->where('sid', '<', $sid)->orderBy('sid', 'desc')->first();
 
         // 댓글 사용시
         if ($this->boardConfig['use']['comment']) {
@@ -157,11 +168,6 @@ class BoardServices extends AppServices
         }
     }
 
-    private function listUrl()
-    {
-        return route('board', ['code' => request()->code]);
-    }
-
     private function boardCreate(Request $request)
     {
         $this->transaction();
@@ -176,7 +182,7 @@ class BoardServices extends AppServices
             return $this->returnJsonData('alert', [
                 'case' => true,
                 'msg' => '게시글이 등록 되었습니다.',
-                'location' => $this->ajaxActionLocation('replace', $this->listUrl()),
+                'location' => $this->ajaxActionLocation('replace', $this->listUrl),
             ]);
         } catch (\Exception $e) {
             return $this->dbRollback($e);
@@ -188,7 +194,7 @@ class BoardServices extends AppServices
         $this->transaction();
 
         try {
-            $board = Board::findOrFail($request->sid);
+            $board = $this->defaultQuery()->findOrFail($request->sid);
             $board->setByData($request);
             $board->update();
 
@@ -197,7 +203,7 @@ class BoardServices extends AppServices
             return $this->returnJsonData('alert', [
                 'case' => true,
                 'msg' => '게시글이 수정 되었습니다.',
-                'location' => $this->ajaxActionLocation('replace', $this->listUrl()),
+                'location' => $this->ajaxActionLocation('replace', $this->listUrl),
             ]);
         } catch (\Exception $e) {
             return $this->dbRollback($e);
@@ -209,7 +215,7 @@ class BoardServices extends AppServices
         $this->transaction();
 
         try {
-            $board = Board::findOrFail($request->sid);
+            $board = $this->defaultQuery()->findOrFail($request->sid);
             $board->delete();
 
             $this->dbCommit('게시글 삭제');
@@ -217,7 +223,7 @@ class BoardServices extends AppServices
             return $this->returnJsonData('alert', [
                 'case' => true,
                 'msg' => '게시글이 삭제 되었습니다.',
-                'location' => $this->ajaxActionLocation('replace', $this->listUrl()),
+                'location' => $this->ajaxActionLocation('replace', $this->listUrl),
             ]);
         } catch (\Exception $e) {
             return $this->dbRollback($e);
@@ -229,7 +235,7 @@ class BoardServices extends AppServices
         $this->transaction();
 
         try {
-            $board = Board::findOrFail($request->sid);
+            $board = $this->defaultQuery()->findOrFail($request->sid);
             $board->{$request->column} = $request->value;
             $board->update();
 
@@ -266,7 +272,7 @@ class BoardServices extends AppServices
         $board->files_count = count($files);
         $board->popups = (object)[
             'width' => $request->width ?? 500,
-            'height' => $request->height ?? 400,
+            'height' => $request->height ?? 600,
             'position_x' => $request->position_x ?? 0,
             'position_y' => $request->position_y ?? 0,
             'popup_detail' => $request->popup_detail ?? '',
@@ -354,14 +360,13 @@ class BoardServices extends AppServices
         $this->data['action'] = $action;
         $this->data['comment'] = $comment;
 
-        $view = view("board.{$request->code}.comment.upsert", $this->data)->render();
+        $view = view("board.{$this->boardCode}.comment.upsert", $this->data)->render();
 
         return $this->returnJsonData('upsert', $view);
     }
 
     private function commentCreate(Request $request)
     {
-//        dd($request->all());
         $this->transaction();
 
         try {

@@ -28,11 +28,16 @@ class MailFile extends Model
         });
     }
 
+    private function firstSet($data)
+    {
+        if (!$this->sid) {
+            $this->ml_sid = $data['ml_sid'];
+        }
+    }
+
     public function setByData($data, $ml_sid)
     {
-        if (empty($this->sid)) {
-            $this->ml_sid = $ml_sid;
-        }
+        $this->firstSet($data);
 
         $this->realfile = $data['realfile'];
         $this->filename = $data['filename'];

@@ -37,7 +37,7 @@ class Board extends Model
             }
 
             // 게시판 데이터 삭제시 첨부파일(단일파일) 있을경우 경로에 있는 실제 파일 삭제
-            foreach(self::boardConfig()['file'] as $key => $val) {
+            foreach (self::boardConfig()['file'] as $key => $val) {
                 $pathField = 'realfile' . $key; // 파일 경로 데이터 저장 컬럼
 
                 if (!empty($board->{$pathField})) {
@@ -47,14 +47,14 @@ class Board extends Model
         });
 
         static::saved(function ($board) {
-            $data = request();
+            request()->merge(['b_sid' => $board->sid]);
 
-            $b_sid = $board->sid;
+            $data = request();
             $plupload_file = $data->plupload_file ?? [];
             $plupload_file_del = $data->plupload_file_del ?? [];
 
             // 팝업 수정 정보 있을때만
-            if (!empty($data->popup)) {
+            if ($data->popup) {
                 /* popup */
                 $popup = $board->popups; // 기존 팝업 불러오기
 
@@ -63,11 +63,11 @@ class Board extends Model
                     if (is_null($popup)) {
                         // 팝업 정보 없을경우 생성
                         $popup = new BoardPopup();
-                        $popup->setByData($data, $b_sid);
+                        $popup->setByData($data);
                         $popup->save();
                     } else {
                         // 팝업 정보 있을경우 업데이트
-                        $popup->setByData($data, $b_sid);
+                        $popup->setByData($data);
                         $popup->update();
                     }
                 } else {
@@ -81,8 +81,10 @@ class Board extends Model
             /* 첨부파일 (plupload) */
             if (!empty($plupload_file)) {
                 foreach (json_decode($plupload_file, true) as $row) { // 첨부파일 (plupload) 등록
+                    $row['b_sid'] = $board->sid;
+
                     $file = new BoardFile();
-                    $file->setByData($row, $b_sid);
+                    $file->setByData($row);
                     $file->save();
                 }
             }
@@ -96,19 +98,33 @@ class Board extends Model
         });
     }
 
-    protected static function boardConfig($code = null)
+    protected function boardConfig($code)
     {
-        return getConfig("board")[$code ?? request()->code];
+        if (empty($code)) {
+            $code = request()->code;
+        }
+
+        return config("site.board.{$code}");
+    }
+
+    public function getBoardConfig($code = '')
+    {
+        return $this->boardConfig($code);
+    }
+
+    public function firstSet($data)
+    {
+        if (!$this->sid) {
+            $this->code = $data['code'];
+            $this->u_sid = $data['u_sid'] ?? thisPK();
+        }
     }
 
     public function setByData($data)
     {
-        $boardConfig = self::boardConfig($data['code']);
+        $boardConfig = $this->getBoardConfig();
 
-        if (empty($this->sid)) {
-            $this->code = $data['code'];
-            $this->u_sid = $data['u_sid'] ?? thisPK();
-        }
+        $this->firstSet($data);
 
         $this->writer = $data['writer'] ?? null;
         $this->email = $data['email'] ?? null;
@@ -134,7 +150,7 @@ class Board extends Model
 
         /* 첨부파일 업로드 or 삭제 */
         if ($data instanceof \Illuminate\Http\Request) { // $data 가 Request 객체일때만.
-            foreach($boardConfig['file'] as $key => $val) {
+            foreach ($boardConfig['file'] as $key => $val) {
                 $file = $data->file("file" . $key) ?? null; // 첨부파일
                 $fileDel = $data->{"file" . $key . '_del'} ?? ''; // 파일삭제
                 $pathField = 'realfile' . $key; // 파일 경로 데이터 저장 컬럼
@@ -257,12 +273,14 @@ class Board extends Model
 
     public function gubunTxt()
     {
-        return self::boardConfig()['gubun']['item'][$this->gubun] ?? '';
+        $boardConfig = $this->getBoardConfig();
+        return $boardConfig['gubun']['item'][$this->gubun] ?? '';
     }
 
     public function categoryTxt()
     {
-        return self::boardConfig()['category']['item'][$this->category] ?? '';
+        $boardConfig = $this->getBoardConfig();
+        return $boardConfig['item'][$this->category] ?? '';
     }
 
     public function eventPeriod($yoil = false)

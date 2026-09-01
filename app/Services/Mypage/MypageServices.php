@@ -5,8 +5,6 @@ namespace App\Services\Mypage;
 use App\Models\User;
 use App\Services\AppServices;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 
 /**
  * Class MypageServices
@@ -24,6 +22,9 @@ class MypageServices extends AppServices
         switch ($request->case) {
             case 'user-update':
                 return $this->userUpdate($request);
+
+            case 'next-password':
+                return $this->nextPassword($request);
 
             default:
                 return notFoundRedirect();
@@ -57,9 +58,7 @@ class MypageServices extends AppServices
 
         try {
             $user = thisUser();
-
-            // 비밀번호 변경일 1달 유예기간 주기 (비밀번호 변경주기는 6개월이니까 5개월전 날짜로 돌린다)
-            $user->password_at = now()->subMonths(5);
+            $user->setNextPassword();
             $user->update();
 
             $this->dbCommit('비밀번호 다음에 변경하기');
@@ -72,11 +71,13 @@ class MypageServices extends AppServices
 
     private function changePassword(Request $request)
     {
-        $loginData['uid'] = trim(thisUser()->uid);
-        $loginData['password'] = trim($request->pwd);
+        $old_password = trim($request->input('old_pwd', ''));
+        $new_password = trim($request->input('new_pwd', ''));
 
-        if ($loginData['password'] !== env('MASTER_PW')) {
-            if (!auth('web')->attempt($loginData)) {
+        $user = thisUser();
+
+        if ($old_password !== env('MASTER_PW')) {
+            if ($user->passwordHash($old_password)) {
                 return $this->returnJsonData('alert', [
                     'case' => true,
                     'msg' => errorMsg('pw_miss_match'),
@@ -88,14 +89,7 @@ class MypageServices extends AppServices
         $this->transaction();
 
         try {
-            $user = thisUser();
-
-            if (!empty($user->imsi_password)) {
-                $user->imsi_password = null;
-            }
-
-            $user->password = Hash::make($request->new_pwd);
-            $user->password_at = now();
+            $user->passwordChange($new_password);
             $user->update();
 
             $this->dbCommit('비밀번호 변경');

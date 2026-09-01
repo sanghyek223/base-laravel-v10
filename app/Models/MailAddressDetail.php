@@ -18,11 +18,16 @@ class MailAddressDetail extends Model
 
     ];
 
-    public function setByData($data)
+    private function firstSet($data)
     {
-        if (empty($this->sid)) {
+        if (!$this->sid) {
             $this->ma_sid = $data['ma_sid'];
         }
+    }
+
+    public function setByData($data)
+    {
+        $this->firstSet($data);
 
         $this->name = trim($data['name']);
         $this->email = trim($data['email']);
