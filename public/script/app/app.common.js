@@ -67,7 +67,7 @@ const callDatePicker = () => {
 
         // 옵션 구성
         const options = {
-            locale: "ko",
+            locale: (script_lang == 'KR' ? "ko" : "en"),
             enableTime: false,
             enableSeconds: false,
             altFormat: 'Y-m-d',
@@ -108,12 +108,12 @@ const callDateTimePicker = () => {
 
         // 옵션 구성
         const options = {
-            locale: "ko",
+            locale: (script_lang == 'KR' ? "ko" : "en"),
             time_24hr: true,
             enableTime: true,
             enableSeconds: true,
             altInput: true,
-            altFormat: 'Y-m-d H:i:S', // 🔥 수정
+            altFormat: 'Y-m-d H:i:S',
             dateFormat: "Y-m-d H:i:S"
         };
 
@@ -152,7 +152,7 @@ const callTargetDatePicker = () => {
 
         // 기본 옵션
         const options = {
-            locale: "ko",
+            locale: (script_lang == 'KR' ? "ko" : "en"),
             enableTime: false,
             enableSeconds: false,
             altFormat: 'Y-m-d',
@@ -201,7 +201,7 @@ const callTargetDateTimePicker = () => {
 
         // 기본 옵션
         const options = {
-            locale: "ko",
+            locale: (script_lang == 'KR' ? "ko" : "en"),
             time_24hr: true,
             enableTime: true,
             enableSeconds: true,
@@ -252,7 +252,7 @@ const callTargetReplaceDatePicker = () => {
 
         // 옵션 기본값
         const options = {
-            locale: "ko",
+            locale: (script_lang == 'KR' ? "ko" : "en"),
             enableTime: false,
             enableSeconds: false,
             altFormat: 'Y-m-d',
