@@ -21,25 +21,14 @@ class AuthServices extends AppServices
 
     public function dataAction(Request $request)
     {
-        switch ($request->case) {
-            case 'uid-check':
-                return $this->uidCheck($request);
-
-            case 'license-check':
-                return $this->licenseCheck($request);
-
-            case 'find-id':
-                return $this->findID($request);
-
-            case 'find-pw':
-                return $this->findPW($request);
-
-            case 'user-create':
-                return $this->userCreate($request);
-
-            default:
-                return notFoundRedirect();
-        }
+        return match ($request->case) {
+            'uid-check' => $this->uidCheck($request),
+            'license-check' => $this->licenseCheck($request),
+            'find-id' => $this->findID($request),
+            'find-pw' => $this->findPW($request),
+            'user-create' => $this->userCreate($request),
+            default => notFoundRedirect(),
+        };
     }
 
     public function uidCheck(Request $request)

@@ -22,33 +22,26 @@ if (!function_exists('checkUrl')) {
 if (!function_exists('thisAuth')) {
     function thisAuth()
     {
-        if (checkUrl() === 'admin') {
-            return auth('admin');
-        }
-
-        return auth('web');
+        return match (checkUrl()) {
+            'admin' => auth('admin'),
+            default => auth('web'),
+        };
     }
 }
 
-// get App Name
-if (!function_exists('getAppName')) {
-    function getAppName(): string
+// global user
+if (!function_exists('thisUser')) {
+    function thisUser()
     {
-        return config('site.app.' . checkUrl() . '.app_name');
+        return thisAuth()->user();
     }
 }
 
-// get default url
-if (!function_exists('getDefaultUrl')) {
-    function getDefaultUrl($auth = false): string
+// get user pk
+if (!function_exists('thisPk')) {
+    function thisPK(): int
     {
-        if ($auth) {
-            return thisAuth()->check()
-                ? getDefaultUrl()
-                : url('auth/login');
-        }
-
-        return url('/');
+        return thisAuth()->id() ?? 0;
     }
 }
 
@@ -68,30 +61,26 @@ if (!function_exists('isAdmin')) {
     }
 }
 
-// D-day
-if (!function_exists('DDay')) {
-    function DDay($date) // $date => Y-m-d 형태
+// get App Name
+if (!function_exists('getAppName')) {
+    function getAppName(): string
     {
-        $currentDate = \Carbon\Carbon::now();
+        return config('site.app.' . checkUrl() . '.app_name');
+    }
+}
 
-        // 같을때
-        if (\Carbon\Carbon::parse($date)->isSameDay($currentDate)) {
-            return "D-day";
+// get default url
+if (!function_exists('getDefaultUrl')) {
+    function getDefaultUrl($auth = false): string
+    {
+        if ($auth) {
+            // 로그인 체크 할때
+            return thisAuth()->check()
+                ? getDefaultUrl()
+                : url('auth/login');
         }
 
-        // 이전 날짜
-        if (\Carbon\Carbon::parse($date)->isBefore($currentDate)) {
-            return 'END';
-        }
-
-        $date = explode('-', $date);
-        $targetDate = \Carbon\Carbon::create($date[0], $date[1], $date[2]);
-
-        $daysUntilTarget = $currentDate->diffInDays($targetDate) + 1;
-
-        if ($daysUntilTarget > 0) {
-            return "D-" . $daysUntilTarget;
-        }
+        return url('/');
     }
 }
 

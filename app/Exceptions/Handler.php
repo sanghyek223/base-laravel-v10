@@ -30,6 +30,11 @@ class Handler extends ExceptionHandler
 
     public function render($request, Throwable $exception)
     {
+        // 개발자 에러 확인용
+        if (isDev()) {
+//            return parent::render($request, $exception);
+        }
+
         // Model fail 일때
         if ($exception instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
             return notFoundRedirect();
@@ -56,11 +61,7 @@ class Handler extends ExceptionHandler
             }
         }
 
-        if (!isDev()) {
-            // 그외 처리하지 못한 에러 발생시 debug 아닐경우 메인페이지로 이동
-            return serverRedirect();
-        }
-
-        return parent::render($request, $exception);
+        // 그외 처리하지 못한 에러 발생시 debug 아닐경우
+        return serverRedirect();
     }
 }

@@ -17,7 +17,7 @@ class MailAddressServices extends AppServices
     {
         $query = MailAddress::withCount('list')->orderByDesc('sid');
 
-        if($request->title) {
+        if ($request->title) {
             $query->where('title', 'LIKE', "%{$request->title}%");
         }
 
@@ -37,19 +37,12 @@ class MailAddressServices extends AppServices
 
     public function dataAction(Request $request)
     {
-        switch ($request->case) {
-            case 'address-create':
-                return $this->addressCreate($request);
-
-            case 'address-update':
-                return $this->addressUpdate($request);
-
-            case 'address-delete':
-                return $this->addressDelete($request);
-
-            default:
-                return notFoundRedirect();
-        }
+        return match ($request->case) {
+            'address-create' => $this->addressCreate($request),
+            'address-update' => $this->addressUpdate($request),
+            'address-delete' => $this->addressDelete($request),
+            default => notFoundRedirect(),
+        };
     }
 
     private function addressCreate(Request $request)

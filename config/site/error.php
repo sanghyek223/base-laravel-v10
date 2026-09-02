@@ -1,6 +1,13 @@
 <?php
 
 return [
+    // ================= 공용 =================
+    '404' => "It's the wrong path.",
+
+    '500' => 'Internal Server Error.',
+
+    'db' => 'DB ERROR.',
+
     // ================= error message (국문) =================
     'captcha' => '인증 문자가 일치하지 않습니다.',
 
@@ -39,12 +46,4 @@ return [
 //    'pw_miss_match' => "The current password does not match.\nPlease check again.",
 //
 //    '419' => 'CSRF Token Expires.',
-
-
-    // ================= 공용 =================
-    '404' => "It's the wrong path.",
-
-    '500' => 'Internal Server Error.',
-
-    'db' => 'DB ERROR.',
 ];

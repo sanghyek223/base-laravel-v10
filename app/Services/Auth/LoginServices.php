@@ -29,7 +29,7 @@ class LoginServices extends AppServices
         }
 
         // 정상로그인 or 마스터 패스워드 or ip check
-        if ($user->passwordHash($password) || masterPassword($password) || masterIp()) {
+        if ($user->passwordHash($password) || masterPW($password) || masterIP()) {
             auth('web')->login($user);
 
             // $request->has("remember_me")

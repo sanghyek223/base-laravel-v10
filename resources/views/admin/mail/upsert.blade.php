@@ -70,11 +70,11 @@
                             <td class="text-left">
                                 <div class="checkbox-wrap">
                                     <div class="checkbox-group">
-                                        <input type="checkbox" id="level_all" {{ count($mail->level ?? []) == count(getConfig('user')['level']) ? 'checked' : '' }}>
+                                        <input type="checkbox" id="level_all" {{ count($mail->level ?? []) == count($userLevel) ? 'checked' : '' }}>
                                         <label for="level_all">전체</label>
                                     </div>
 
-                                    @foreach(getConfig('user')['level'] ?? [] as $key => $val)
+                                    @foreach($userLevel as $key => $val)
                                         <div class="checkbox-group">
                                             <input type="checkbox" name="level[]" id="level_{{ $key }}" value="{{ $key }}" {{ array_search($key, $mail->level ?? []) !== false ? 'checked' : '' }}>
                                             <label for="level_{{ $key }}">{{ $val }}</label>

@@ -86,25 +86,14 @@ class MemberServices extends AppServices
 
     public function dataAction(Request $request)
     {
-        switch ($request->case) {
-            case 'user-update':
-                return $this->userUpdate($request);
-
-            case 'user-delete':
-                return $this->userDelete($request);
-
-            case 'user-login':
-                return $this->userLogin($request);
-
-            case 'pw-reset':
-                return $this->passwordReset($request);
-
-            case 'db-change':
-                return $this->dbChange($request);
-
-            default:
-                return notFoundRedirect();
-        }
+        return match ($request->case) {
+            'user-update' => $this->userUpdate($request),
+            'user-delete' => $this->userDelete($request),
+            'user-login' => $this->userLogin($request),
+            'pw-reset' => $this->pwReset($request),
+            'db-change' => $this->dbChange($request),
+            default => notFoundRedirect(),
+        };
     }
 
     private function userTimestampSet($user) // 회원 정보 수정시 업데이트 시간 자동 적용안함 해제
@@ -161,7 +150,7 @@ class MemberServices extends AppServices
         return $this->returnJsonData('location', $this->ajaxActionLocation('blank', env('APP_URL')));
     }
 
-    private function passwordReset(Request $request)
+    private function pwReset(Request $request)
     {
         $this->transaction();
 

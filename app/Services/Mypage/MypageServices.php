@@ -19,16 +19,11 @@ class MypageServices extends AppServices
 
     public function dataAction(Request $request)
     {
-        switch ($request->case) {
-            case 'user-update':
-                return $this->userUpdate($request);
-
-            case 'next-password':
-                return $this->nextPassword($request);
-
-            default:
-                return notFoundRedirect();
-        }
+        return match ($request->case) {
+            'user-update'  => $this->userUpdate($request),
+            'next-password' => $this->nextPassword($request),
+            default        => notFoundRedirect(),
+        };
     }
 
     private function userUpdate(Request $request)

@@ -18,9 +18,8 @@ class MainServices extends AppServices
 
     public function dataAction(Request $request)
     {
-        switch ($request->case) {
-            default:
-                return notFoundRedirect();
-        }
+        return match ($request->case) {
+            default => notFoundRedirect(),
+        };
     }
 }

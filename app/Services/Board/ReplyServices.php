@@ -41,22 +41,13 @@ class ReplyServices extends AppServices
 
     public function dataAction(Request $request)
     {
-        switch ($request->case) {
-            case 'reply-create':
-                return $this->replyCreate($request);
-
-            case 'reply-update':
-                return $this->replyUpdate($request);
-
-            case 'reply-delete':
-                return $this->replyDelete($request);
-
-            case 'db-change':
-                return $this->dbChange($request);
-
-            default:
-                return notFoundRedirect();
-        }
+        return match ($request->case) {
+            'reply-create' => $this->replyCreate($request),
+            'reply-update' => $this->replyUpdate($request),
+            'reply-delete' => $this->replyDelete($request),
+            'db-change' => $this->dbChange($request),
+            default => notFoundRedirect(),
+        };
     }
 
     private function listUrl()

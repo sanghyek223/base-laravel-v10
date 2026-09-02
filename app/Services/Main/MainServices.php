@@ -23,10 +23,9 @@ class MainServices extends AppServices
 
     public function dataAction(Request $request)
     {
-        switch ($request->case) {
-            default:
-                return notFoundRedirect();
-        }
+        return match ($request->case) {
+            default        => notFoundRedirect(),
+        };
     }
 
     private function mainBoards($code, $limit = 5) // 메인에 노출되는 게시판 리스트

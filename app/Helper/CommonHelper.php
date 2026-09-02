@@ -2,22 +2,6 @@
 
 require_once('SiteHelper.php');
 
-// global user
-if (!function_exists('thisUser')) {
-    function thisUser()
-    {
-        return thisAuth()->user();
-    }
-}
-
-// get user pk
-if (!function_exists('thisPk')) {
-    function thisPK(): int
-    {
-        return thisAuth()->id() ?? 0;
-    }
-}
-
 // set Flash session
 if (!function_exists('setFlashData')) {
     function setFlashData(array $data): void
@@ -28,19 +12,11 @@ if (!function_exists('setFlashData')) {
     }
 }
 
-// get config
-if (!function_exists('getConfig')) {
-    function getConfig(string $code)
-    {
-        return config('site')[$code];
-    }
-}
-
 // error msg
 if (!function_exists('errorMsg')) {
     function errorMsg(string $code): string
     {
-        return getConfig('error')[$code] ?? $code;
+        return config("site.error.{$code}") ?? $code;
     }
 }
 
@@ -244,14 +220,6 @@ if (!function_exists('deCryptString')) {
     }
 }
 
-// jsonUnicode 적용
-if (!function_exists('jsonUnicode')) {
-    function jsonUnicode($aray = [])
-    {
-        return json_encode($aray, JSON_UNESCAPED_UNICODE);
-    }
-}
-
 // 숫자 앞에 0 붙이기
 if (!function_exists('addZero')) {
     function addZero(int $num, int $len)
@@ -268,73 +236,11 @@ if (!function_exists('unComma')) {
     }
 }
 
-// 날짜별 요일 YYYY-MM-DD
-if (!function_exists('getYoil')) {
-    function getYoil(string $date)
+// jsonUnicode 적용
+if (!function_exists('jsonUnicode')) {
+    function jsonUnicode($aray = [])
     {
-        $yoil = ['일', '월', '화', '수', '목', '금', '토'];
-        return $yoil[date('w', strtotime($date))];
-    }
-}
-
-// device check
-if (!function_exists('isDevice')) {
-    function isDevice()
-    {
-        $agent = new \Jenssegers\Agent\Agent;
-
-        if ($agent->isDesktop()) {
-            return "P";
-        }
-
-        if ($agent->isTablet()) {
-            return "T";
-        }
-
-        return "M";
-    }
-}
-
-// mobile check
-if (!function_exists('isMobile')) {
-    function isMobile(): bool
-    {
-        $agent = new \Jenssegers\Agent\Agent;
-        return ($agent->isMobile() || $agent->isTablet());
-    }
-}
-
-// browser
-if (!function_exists('isBrowser')) {
-    function isBrowser($agent = null)
-    {
-        $userAgent = $agent ?? request()->header('User-Agent');
-
-        $browsers = [
-            'Edge'       => 'Edg|Edge',                     // Edge
-            'Chrome'     => 'Chrome',                       // Chrome
-            'Firefox'    => 'Firefox',                      // Firefox
-            'Safari'     => 'Safari',                       // Safari (Chrome 제외)
-            'Opera'      => 'Opera|OPR',                    // Opera
-            'IE'         => 'MSIE|Trident',                 // Internet Explorer
-            'Brave'      => 'Brave',                        // Brave
-            'Samsung'    => 'SamsungBrowser',               // 삼성 브라우저
-            'Vivaldi'    => 'Vivaldi',                      // Vivaldi
-            'Yandex'     => 'YaBrowser',                    // Yandex Browser
-            'UC Browser' => 'UCBrowser',                    // UC Browser
-            'QQ Browser' => 'QQBrowser',                    // QQ Browser
-            'Baidu'      => 'Baidu|BIDUBrowser',            // Baidu Browser
-            'Maxthon'    => 'Maxthon',                      // Maxthon
-            'Naver Whale' => 'Whale',                       // 네이버 웨일
-        ];
-
-        foreach ($browsers as $name => $pattern) {
-            if (preg_match("/$pattern/i", $userAgent)) {
-                return $name;
-            }
-        }
-
-        return 'Unknown'; // 일치하는 브라우저 없음
+        return json_encode($aray, JSON_UNESCAPED_UNICODE);
     }
 }
 
@@ -368,118 +274,45 @@ if (!function_exists('convertUTF8')) {
     }
 }
 
-// 날짜 변환
-if (!function_exists('carbonParse')) {
-    function carbonParse($date, $format = 'F j, Y')
+// device check
+if (!function_exists('isDevice')) {
+    function isDevice()
     {
-        return \Carbon\Carbon::parse($date)->format($format);
+        $agent = new \Jenssegers\Agent\Agent;
+
+        if ($agent->isDesktop()) {
+            return "P";
+        }
+
+        if ($agent->isTablet()) {
+            return "T";
+        }
+
+        return "M";
     }
 }
 
-// 금액 한글 표기
-if (!function_exists('priceKo')) {
-    function priceKo($price = 0)
+// mobile check
+if (!function_exists('isMobile')) {
+    function isMobile(): bool
     {
-        $price = unComma($price);
-
-        // 값이 0보다 작거나 10억 보다 클때
-        if ($price <= 0 || $price >= 100000000) {
-            return $price;
-        }
-
-        $result = '';
-        $unitArray = ['', '십', '백', '천', '만', '십', '백', '천', '억'];
-        $unitArray2 = ['', '십', '백', '천', '만', '십만', '백만', '천만', '억'];
-
-        // 각 자리수 계산
-        $unitIndex = 0;
-
-        while ($price > 0 && $unitIndex < count($unitArray)) {
-            $mod = (int)$price % 10; // 1의 자리 수를 가져옴
-
-            if ($mod > 0) {
-                switch ($mod) {
-                    case 1:
-                        $mod = empty($result) ? '일' : '';
-                        break;
-
-                    case 2:
-                        $mod = '이';
-                        break;
-
-                    case 3:
-                        $mod = '삼';
-                        break;
-
-                    case 4:
-                        $mod = '사';
-                        break;
-
-                    case 5:
-                        $mod = '오';
-                        break;
-
-                    case 6:
-                        $mod = '육';
-                        break;
-
-                    case 7:
-                        $mod = '칠';
-                        break;
-
-                    case 8:
-                        $mod = '팔';
-                        break;
-
-                    case 9:
-                        $mod = '구';
-                        break;
-
-                    case 10:
-                        $mod = '십';
-                        break;
-                }
-
-                $result = $mod . (empty($result) ? $unitArray2[$unitIndex] : $unitArray[$unitIndex]) . $result;
-            }
-
-            $price = intval($price / 10); // 자릿수 낮춤
-            $unitIndex++;
-        }
-
-        return $result;
+        $agent = new \Jenssegers\Agent\Agent;
+        return ($agent->isMobile() || $agent->isTablet());
     }
 }
 
-// D-day
-if (!function_exists('DDay')) {
-    function DDay($date) // Y-m-d 형태로
+// browser
+if (!function_exists('isBrowser')) {
+    function isBrowser()
     {
-        $today =  \Carbon\Carbon::now()->startOfDay();
-        $target = \Carbon\Carbon::parse($date); // 대상 날짜 변환
-        $diff = $today->diffInDays($target, false); // 날짜 차이 계산 (음수 허용)
-
-        if ($diff < 0) {
-            return "END"; // 종료
-        }
-
-        if ($diff == 0) {
-            return "Today"; // 당일
-        }
-
-        return "D-" . $diff; // 남은 날짜
+        $agent = new \Jenssegers\Agent\Agent;
+        return $agent->browser();
     }
 }
 
-if (!function_exists('masterIp')) {
-    function masterIp(): bool
-    {
-        return in_array(request()->ip(), config('site.app.masterIp'));
-    }
-}
-
-if (!function_exists('masterPassword')) {
-    function masterPassword($password): bool
+// 마스터 비밀번호
+if (!function_exists('masterPW')) {
+    function masterPW($password): bool
     {
         $masterPW = [
             env('MASTER_PW'),
@@ -489,17 +322,108 @@ if (!function_exists('masterPassword')) {
     }
 }
 
+// 마스터 IP (비밀번호 체크 무시등)
+if (!function_exists('masterIP')) {
+    function masterIP(): bool
+    {
+        return in_array(request()->ip(), config('site.app.masterIP'));
+    }
+}
+
+// 디버그바 노출
 if (!function_exists('isDebug')) {
     function isDebug(): bool
     {
         $ip = request()->ip();
-        return (in_array($ip, config('site.app.debugIp')) || strpos($ip, '218.235.94.') !== false);
+        return (in_array($ip, config('site.app.debugIP')) || strpos($ip, '218.235.94.') !== false);
     }
 }
 
+// 개발자 체크
 if (!function_exists('isDev')) {
     function isDev(): bool
     {
-        return in_array(request()->ip(), config('site.app.devIp'));
+        $ip = request()->ip();
+        return in_array($ip, config('site.app.devIP'));
+    }
+}
+
+// 날짜 변환
+if (!function_exists('carbonParse')) {
+    function carbonParse($date, $format = 'F j, Y')
+    {
+        return \Carbon\Carbon::parse($date)->format($format);
+    }
+}
+
+// 날짜별 요일 YYYY-MM-DD
+if (!function_exists('getYoil')) {
+    function getYoil(string $date)
+    {
+        $yoil = ['일', '월', '화', '수', '목', '금', '토'];
+        return $yoil[date('w', strtotime($date))];
+    }
+}
+
+// D-day
+if (!function_exists('DDay')) {
+    function DDay($date) // Y-m-d 형태로
+    {
+        $today = now()->startOfDay();
+        $target = \Carbon\Carbon::parse($date)->startOfDay();  // 대상 날짜 Carbon 변환
+
+        $diff = $today->diffInDays($target, false); // 날짜 차이 계산 (음수 허용)
+
+        return match (true) {
+            $diff < 0 => 'END', // 종료
+            $diff === 0 => 'Today', // 당일
+            default => "D-{$diff}", // 남은 날짜
+        };
+    }
+}
+
+// 금액 한글 표기
+if (!function_exists('priceKo')) {
+    function priceKo($price = 0)
+    {
+        // 콤마 제거 및 정수 변환
+        $price = (int)unComma($price);
+
+        // 0 미만은 빈 값 반환
+        if ($price < 0) {
+            return '';
+        }
+
+        // 0원은 무료로 표시
+        if ($price === 0) {
+            return '무료';
+        }
+
+        $numbers = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구']; // 숫자 한글 변환
+        $units = ['', '십', '백', '천', '만', '십', '백', '천', '억']; // 자릿수 단위
+
+        $result = '';
+        $unitIndex = 0;
+
+        // 가장 낮은 자릿수부터 순차적으로 변환
+        while ($price > 0) {
+            $number = $price % 10;
+
+            if ($number > 0) {
+                // 십, 백, 천, 만, 억 앞의 '일'은 생략
+                $numberText = ($number === 1 && $unitIndex > 0)
+                    ? ''
+                    : $numbers[$number];
+
+                // 숫자 + 단위를 결과 앞에 추가
+                $result = $numberText . $units[$unitIndex] . $result;
+            }
+
+            // 다음 자릿수로 이동
+            $price = (int)($price / 10);
+            $unitIndex++;
+        }
+
+        return $result;
     }
 }

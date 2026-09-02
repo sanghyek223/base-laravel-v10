@@ -44,22 +44,13 @@ class MailAddressDetailServices extends AppServices
 
     public function dataAction(Request $request)
     {
-        switch ($request->case) {
-            case 'collective-create':
-                return $this->collectiveCreate($request);
-
-            case 'individual-create':
-                return $this->individualCreate($request);
-
-            case 'individual-update':
-                return $this->individualUpdate($request);
-
-            case 'addressDetail-delete':
-                return $this->listDelete($request);
-
-            default:
-                return notFoundRedirect();
-        }
+        return match ($request->case) {
+            'collective-create' => $this->collectiveCreate($request),
+            'individual-create' => $this->individualCreate($request),
+            'individual-update' => $this->individualUpdate($request),
+            'addressDetail-delete' => $this->listDelete($request),
+            default => notFoundRedirect(),
+        };
     }
 
     private function collectiveCreate(Request $request)

@@ -3,14 +3,12 @@
 namespace App\Services\Admin\Mail;
 
 use App\Models\MailAddress;
-use App\Models\MailAddressDetail;
 use App\Models\MailList;
 use App\Models\MailSend;
 use App\Models\MailFile;
 use App\Models\User;
 use App\Models\WiseUMailLog;
 use App\Services\AppServices;
-use App\Services\CommonServices;
 use App\Services\MailRealSendServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +23,7 @@ class MailServices extends AppServices
 
     public function __construct()
     {
-        $this->mailConfig = getConfig('mail');
+        $this->mailConfig = config('site.mail');
     }
 
     public function indexService(Request $request)
@@ -70,7 +68,9 @@ class MailServices extends AppServices
     {
         $sid = $request->sid;
         $this->data['mail'] = empty($sid) ? null : MailList::findOrFail($sid);
+
         $this->data['address'] = MailAddress::all();
+        $this->data['userLevel'] = config('site.user.level') ?? [];
 
         return $this->data;
     }
@@ -97,31 +97,18 @@ class MailServices extends AppServices
 
     public function dataAction(Request $request)
     {
-        switch ($request->case) {
-            case 'mail-create':
-                return $this->mailCreateService($request);
+        return match ($request->case) {
+            'mail-create' => $this->mailCreateService($request),
+            'mail-update' => $this->mailUpdateService($request),
+            'mail-delete' => $this->mailDeleteService($request),
+            'mail-upsert-preview' => $this->mailUpsertPreviewService($request),
 
-            case 'mail-update':
-                return $this->mailUpdateService($request);
+            'mail-send' => $this->mailSendService($request),
+            'target-send' => $this->targetSendService($request),
 
-            case 'mail-delete':
-                return $this->mailDeleteService($request);
-
-            case 'mail-upsert-preview': // 메일 작성중 미리보기
-                return $this->mailUpsertPreviewService($request);
-
-            case 'mail-send': // 메일 전체 발송 or 재발송
-                return $this->mailSendService($request);
-
-            case 'target-send': // 메일 특정대상 발송
-                return $this->targetSendService($request);
-
-            case 'send-renew': // 메일 발송 상태 갱신
-                return $this->mailSendRenewService($request);
-
-            default:
-                return notFoundRedirect();
-        }
+            'send-renew' => $this->mailSendRenewService($request),
+            default => notFoundRedirect(),
+        };
     }
 
     private function mailCreateService(Request $request)

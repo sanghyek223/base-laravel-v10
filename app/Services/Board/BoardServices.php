@@ -132,40 +132,21 @@ class BoardServices extends AppServices
 
     public function dataAction(Request $request)
     {
-        switch ($request->case) {
-            case 'board-create':
-                return $this->boardCreate($request);
+        return match ($request->case) {
+            'board-create' => $this->boardCreate($request),
+            'board-update' => $this->boardUpdate($request),
+            'board-delete' => $this->boardDelete($request),
+            'db-change' => $this->dbChange($request),
 
-            case 'board-update':
-                return $this->boardUpdate($request);
+            'popup-layer-preview' => $this->popupLayerPreview($request),
+            'popup-rolling-preview' => $this->popupRollingPreview($request),
 
-            case 'board-delete':
-                return $this->boardDelete($request);
-
-            case 'db-change':
-                return $this->dbChange($request);
-
-            case 'popup-layer-preview':
-                return $this->popupLayerPreview($request);
-
-            case 'popup-rolling-preview':
-                return $this->popupRollingPreview($request);
-
-            case 'comment-postform':
-                return $this->commentPostform($request);
-
-            case 'comment-create':
-                return $this->commentCreate($request);
-
-            case 'comment-update':
-                return $this->commentUpdate($request);
-
-            case 'comment-delete':
-                return $this->commentDelete($request);
-
-            default:
-                return notFoundRedirect();
-        }
+            'comment-postform' => $this->commentPostform($request),
+            'comment-create' => $this->commentCreate($request),
+            'comment-update' => $this->commentUpdate($request),
+            'comment-delete' => $this->commentDelete($request),
+            default => notFoundRedirect(),
+        };
     }
 
     private function boardCreate(Request $request)

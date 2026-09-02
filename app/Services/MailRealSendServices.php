@@ -19,7 +19,7 @@ class MailRealSendServices extends AppServices
 
     public function __construct()
     {
-        $this->mailConfig = getConfig('mail');
+        $this->mailConfig = config('site.mail');
     }
 
     // 메일 수신 대상 추가

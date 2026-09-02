@@ -17,7 +17,7 @@ class BoardCheck
     public function handle(Request $request, Closure $next)
     {
         $code = $request->code; // 게시판 code
-        $config = getConfig('board')[$code] ?? null; // 게시판 config
+        $config = config("site.board.{$code}") ?? null; // 게시판 config
 
         if (is_null($config)) {
             return notFoundRedirect();
