@@ -132,11 +132,6 @@ class CommonServices extends AppServices
         // Zip 파일을 저장할 디렉터리 경로
         $zipDirectory = storage_path('app/zipArchive');
 
-        // 비밀번호가 있을경우
-        if ($password) {
-            $password = deCryptString($password);
-        }
-
         // 폴더가 없을경우 생성
         if (!File::exists($zipDirectory)) {
             File::makeDirectory($zipDirectory, 0755, true);
@@ -158,7 +153,7 @@ class CommonServices extends AppServices
 
         // 비밀 번호 있을경우 암호 설정
         if ($password) {
-            $zip->setPassword($this->zipPassword());
+            $zip->setPassword($password);
         }
 
         // addFile ( 파일이 존재하는 경로, 저장될 이름 )
@@ -171,7 +166,7 @@ class CommonServices extends AppServices
 
                 // 비밀번호 있을경우 암호화
                 if ($password) {
-                    $zip->setEncryptionName($path, \ZipArchive::EM_AES_256);
+                    $zip->setEncryptionName($row->filename, \ZipArchive::EM_AES_256);
                 }
             }
         }

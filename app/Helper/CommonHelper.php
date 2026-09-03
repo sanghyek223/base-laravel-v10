@@ -124,11 +124,11 @@ if (!function_exists('handleCustomRedirect')) {
         $url = session()->pull('url');
 
         if (session()->pull('ajax')) {
-            return response()->json(['alert' => [
-                'case' => true,
-                'msg' => $message,
-                'location' => ['case' => 'reload'],
-            ]]);
+            return response()->json([
+                'reload' => true,
+                'status' => 'fail',
+                'msg' => '허용되지 않은 접근입니다.',
+            ]);
         }
 
         switch ($redirectType) {

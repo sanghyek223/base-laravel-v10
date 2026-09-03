@@ -24,7 +24,7 @@ class BoardServices extends AppServices
         $this->boardCode = request()->code;
         $this->listUrl = route('board', ['code' => $this->boardCode]);
 
-        $this->boardConfig = config("site.board.{$this->boardCode}");
+        $this->boardConfig = (new Board())->getBoardConfig();
     }
 
     private function defaultQuery($count = false)

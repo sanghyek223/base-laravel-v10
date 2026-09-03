@@ -14,6 +14,28 @@ use Illuminate\Http\Request;
  */
 class ReplyServices extends AppServices
 {
+    private $boardConfig;
+    private $boardCode;
+
+    public function __construct()
+    {
+        $this->boardCode = request()->code;
+        $this->boardConfig = (new Board())->getBoardConfig();
+    }
+
+    private function defaultQuery($count = false)
+    {
+        $query = Board::where([
+            'code' => $this->boardCode,
+        ]);
+
+        if ($count) {
+            $query->withCount('files', 'comments');
+        }
+
+        return $query;
+    }
+
     public function upsertService(Request $request)
     {
         $sid = $request->sid;

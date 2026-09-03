@@ -91,9 +91,9 @@ class Board extends Model
 
             // 첨부파일 (plupload) 삭제
             if (!empty($plupload_file_del)) {
-                foreach ($board->files()->whereIn('sid', $plupload_file_del)->get() as $plFile) {
+                $board->files()->whereIn('sid', $plupload_file_del)->get()->each(function ($plFile) {
                     $plFile->delete();
-                }
+                });
             }
         });
     }
@@ -104,7 +104,9 @@ class Board extends Model
             $code = request()->code;
         }
 
-        return config("site.board.{$code}");
+        return match (checkUrl()) {
+            default => config("site.board.{$code}"),
+        };
     }
 
     public function getBoardConfig($code = '')
@@ -248,7 +250,7 @@ class Board extends Model
                 return 'javascript:void(0);';
 
             case 1: // 게시판 plupload 파일이 하나일 경우 파일만 다운로드
-                return $this->files[0]->download();
+                return $this->files[0]->downloadUrl();
 
             default: // 게시판 plupload 파일이 여러개일 경우 압축 파일로 다운로드
 

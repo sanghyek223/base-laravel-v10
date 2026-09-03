@@ -57,18 +57,9 @@ class BoardReply extends Model
         });
     }
 
-    protected function boardConfig($code)
-    {
-        if (empty($code)) {
-            $code = request()->code;
-        }
-
-        return config("site.board.{$code}");
-    }
-
     public function getBoardConfig($code = '')
     {
-        return $this->boardConfig($code);
+        return (new Board())->getBoardConfig($code);
     }
 
     public function firstSet($data)
@@ -115,7 +106,7 @@ class BoardReply extends Model
                 return 'javascript:void(0);';
 
             case 1: // 게시판 plupload 파일이 하나일 경우 파일만 다운로드
-                return $this->files[0]->download();
+                return $this->files[0]->downloadUrl();
 
             default: // 게시판 plupload 파일이 여러개일 경우 압축 파일로 다운로드
 
